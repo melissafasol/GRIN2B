@@ -48,11 +48,9 @@ class Filter:
         butter_b, butter_a = signal.butter(self.order, [self.low, self.high], btype='band', analog = False)
         
         filtered_data = signal.filtfilt(butter_b, butter_a, self.unfiltered_data)
-
-        for timevalue in seizure_timevalues:
-            start_time_bin = seizure_timevalues[0] 
-            end_time_bin = seizure_timevalues[1]
-            self.extracted_datavalues.append(filtered_data[start_time_bin: end_time_bin])
+        
+        for epoch in seizure_timevalues:
+            self.extracted_datavalues.append(filtered_data[epoch[0]: epoch[1]])
             
         for i in range(len(self.extracted_datavalues)):
             for j in range(len(self.extracted_datavalues[i])):
