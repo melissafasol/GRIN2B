@@ -44,11 +44,12 @@ class Filter:
         return channels_without_noise 
 
 
+    #function for seizure epochs that are different lengths and not binned into 5 seconds  
     def butter_bandpass_seizure(self, seizure_timevalues):
         butter_b, butter_a = signal.butter(self.order, [self.low, self.high], btype='band', analog = False)
         
         filtered_data = signal.filtfilt(butter_b, butter_a, self.unfiltered_data)
-        
+
         for epoch in seizure_timevalues:
             self.extracted_datavalues.append(filtered_data[epoch[0]: epoch[1]])
             
