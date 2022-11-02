@@ -63,23 +63,28 @@ def one_second_timebins(zipped_timevalues,  epoch_length):
     one_second_timebins = [time_start for epoch in new_time_array for time_start in epoch]
     return one_second_timebins
 
-
-def removing_seizure_epochs(seizure_br_file, wake_br_file):
+def removing_seizure_epochs(seizure_br_file, wake_indices):
     
     def round_to_multiple(number, multiple):
         return multiple*round(number/multiple)
     
-    wake_states = wake_br_file[wake_br_file['brainstate'] == 0]
-    start_times = wake_states.iloc[:,1:2].to_numpy()
-    wake_start = [int(epoch) for sublist in start_times for epoch in sublist]
-    
     seizure_times_start = seizure_br_file.iloc[:, 0:1].to_numpy().astype(int)
     seizure_times_start_epochs = [epoch for sublist in seizure_times_start for epoch in sublist]
     testing_multiples = [round_to_multiple(i, 5) for i in seizure_times_start_epochs] 
+    sample_rate_indices = [int(epoch*250.4) for epoch in testing_multiples]
     
     matching_epochs = []
-    for seizure_epoch in testing_multiples:
-        if seizure_epoch in wake_start:
+    for seizure_epoch in sample_rate_indices:
+        if seizure_epoch in wake_indices:
             matching_epochs.append(seizure_epoch)
             
     return matching_epochs
+
+
+def clean_indices(timevalues_array, seizure_epochs):
+    new_indices = []
+    for epoch in timevalues_array:
+        if epoch not in seizure_epochs:
+            new_indices.append(epoch)
+
+    return new_indices
