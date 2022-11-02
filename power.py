@@ -14,7 +14,7 @@ class PowerSpectrum:
         for data_array in self.data_without_noise:
             self.welch_channel.append(scipy.signal.welch(data_array, window = 'hann', fs = 250.4, nperseg = self.nperseg))
         power_spectrum_list = [power_array[1] for power_array in self.welch_channel]
-        
+
         #save one array of frequency values for plotting 
         frequency = self.welch_channel[0][0]
         
