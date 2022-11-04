@@ -1,6 +1,6 @@
 import sys 
 
-sys.path.insert(0, '/home/melissa/PROJECT_DIRECTORIES/taini_main/scripts')
+sys.path.insert(0, '/home/melissa/PROJECT_DIRECTORIES/taini_main/scripts/Preprocessing')
 from preproc1_preparefiles import PrepareFiles, LoadFromStart
 
 sample_rate = 250.4
