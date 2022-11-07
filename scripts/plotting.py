@@ -20,7 +20,6 @@ def plot_by_channel(dataframe_to_plot, genotype, sleepstage, save_path, plots_li
                 animal_idx = pos_idx_to_animal_idx(row_idx, col_idx)
                 print(animal_idx)
                 animal_data = dataframe_to_plot[dataframe_to_plot["Animal_ID"] == plot[animal_idx]]
-                print(animal_data)
                 sns.lineplot(data=animal_data, x='Frequency', y='Power', hue='Channel', ax=axs[col_idx], palette = plotting_palette)
                 #axs[row_idx, col_idx].text(0.5, 0.5, plot[animal_idx], fontsize=12) #test that plt functions are rendering correctly 
                 plt.suptitle(str(genotype) + ' ' + str(sleepstage), fontsize = 30, fontweight = 'bold') 
