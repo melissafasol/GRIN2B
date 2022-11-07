@@ -19,9 +19,10 @@ seizure_epochs = []
 average_df = []
 animals_exclude_seizures = ['140', '238', '362', '365', '375', '378', '401', '402', '404']
 save_plot_directory = '/home/melissa/RESULTS/GRIN2B/WAKE/wake_cleaning'
+test_running = ['132']
 
 
-for animal in br_animal_IDs:
+for animal in test_running:
     if animal in animals_exclude_seizures:
         print(str(animal) + ' in seizure free id')
         prepare_GRIN2B = PrepareGRIN2B(directory_path, animal)
@@ -118,6 +119,8 @@ for animal in br_animal_IDs:
             power_2 = PowerSpectrum(filtered_data_2, nperseg=1252)  
             mean_psd_1, frequency_1, noisy_epochs_1 = power_1.average_psd(average='False')
             mean_psd_2, frequency_2, noisy_epochs_2 = power_2.average_psd(average='False')
+            print(len(mean_psd_2))
+            print(len(mean_psd_1))
             results_psd = pd.DataFrame(data = {'Power_1': mean_psd_1, 'Power_2': mean_psd_2})
             results_noisy_epochs = pd.DataFrame(data = {'Power_1': noisy_epochs_1, 'Power_2': noisy_epochs_2})
             average_psd = results_psd[['Power_1', 'Power_2']].mean(axis = 1)
