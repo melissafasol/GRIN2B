@@ -120,6 +120,12 @@ channel_dict = {'right_hem': [0, 2, 3, 4, 5, 6, 7],
                 'visual_right': [5, 6],
                 'visual_left': [8,9]}
 
-channels_colors_dict= {0 : 'teal', 2 :'lightblue', 3 : 'lightblue', 4: 'lightblue', 5: 'orangered',
-              6 : 'orangered', 7 : 'teal', 8: 'orangered', 9:'orangered', 10: 'teal',
+
+
+#dictionary for plotting all channels per animal according to brain region
+#red = visual channels
+#orange = motor channels
+#teal = somatosensory channels
+channels_colors_dict= {0 : 'teal', 2 :'lightblue', 3 : 'lightblue', 4: 'lightblue', 5: 'darkred',
+              6 : 'darkred', 7 : 'teal', 8: 'darkred', 9:'darkred', 10: 'teal',
               11: 'lightblue', 12: 'lightblue', 13: 'lightblue', 15 : 'teal'}
