@@ -18,7 +18,7 @@ from save_functions import average_power_df, concatenate_files, save_files, spec
 directory_npy_path = '/home/melissa/PREPROCESSING/GRIN2B/GRIN2B_numpy'
 seizure_br_path = '/home/melissa/PREPROCESSING/GRIN2B/seizures'
 channel_number_list =  [0,2,3,4,5,6,7,8,9,10,11,12,13,15]
-
+save_path = '/home/melissa/RESULTS/GRIN2B/Power/seizures'
 seizure_df = []
 
 sampling_rate = 250.4
@@ -87,5 +87,5 @@ for animal in br_animal_IDs:
 
                  
 merged_power_file = pd.concat(seizure_df, axis = 0).drop_duplicates().reset_index(drop = True)
-os.chdir('/home/melissa/RESULTS/GRIN2B/seizures')
+os.chdir(save_path)
 merged_power_file.to_csv(str('seizure_GRIN2B') + '_power.csv', index = True)
