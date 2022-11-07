@@ -107,3 +107,15 @@ end_time_GRIN2B_baseline = {'129_1A': 39723456 , '129_2A': 61358016,
                      '424_1A': 39407952, '424_2A': 61042512,
                      '430_1A': 39407952, '430_2A': 61042512,
                      '433_1A': 36177792, '433_2A':57812352}
+
+channel_dict = {'right_hem': [0, 2, 3, 4, 5, 6, 7],
+                'left_hem' : [8, 9, 10, 11, 12, 13, 15],
+                'motor': [2, 3, 4, 11, 12, 13],
+                'motor_right' : [2, 3, 4],
+                'motor_left' : [11, 12, 13],
+                'somatosensory' : [0,7, 10, 15],
+                'somatosensory_right' : [0, 7],
+                'somatosensory_left' : [10, 15],
+                'visual' : [5, 6, 8, 9],
+                'visual_right': [5, 6],
+                'visual_left': [8,9]}

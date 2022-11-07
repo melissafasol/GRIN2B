@@ -13,11 +13,10 @@ from preproc2_extractbrainstate import ExtractBrainStateIndices
 
 directory_path = '/home/melissa/PREPROCESSING/GRIN2B/GRIN2B_numpy'
 seizure_br_path = '/home/melissa/PREPROCESSING/GRIN2B/seizures'
-brain_state_number = 0
+brain_state_number = 1
 channel_number_list =  [0,2,3,4,5,6,7,8,9,10,11,12,13,15]
 seizure_epochs = []
 average_df = []
-noisy_ids = ['238', '132', '430', '382']
 animals_exclude_seizures = ['140', '238', '362', '365', '375', '378', '401', '402', '404']
 save_plot_directory = '/home/melissa/RESULTS/GRIN2B/WAKE/wake_cleaning'
 
@@ -56,15 +55,37 @@ for animal in br_animal_IDs:
             noisy_epochs_plot = average_noisy_epochs.tolist()
             save_plot_as_psd = str(animal) + '_' + str(channelnumber) + '_cleanepochs_'
             save_plot_as_noise = str(animal) + '_' + str(channelnumber) + '_noisyepochs_'
-            plots_ = power_1.plotting_psd(psd_plot, frequency_1, save_plot_directory, save_plot_as_psd)
-            plots_noisy = power_1.plotting_psd(noisy_epochs_plot, frequency_1, save_plot_directory, save_plot_as_noise)
-            if animal in GRIN_het_IDs:
-                    genotype = 'GRIN2B'
-            else:
-                    genotype = 'WT'
-            dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': average_psd[0:626], 
+            #plots_ = power_1.plotting_psd(psd_plot, frequency_1, save_plot_directory, save_plot_as_psd)
+            #plots_noisy = power_1.plotting_psd(noisy_epochs_plot, frequency_1, save_plot_directory, save_plot_as_noise)
+            if len(mean_psd_1) > 0 and len(mean_psd_2) > 0 :
+                results = pd.DataFrame(data = {'Power_1': mean_psd_1, 'Power_2': mean_psd_2})
+                average_psd = results[['Power_1', 'Power_2']].mean(axis = 1)
+                if animal in GRIN_het_IDs:
+                        genotype = 'GRIN2B'
+                else:
+                        genotype = 'WT'
+                dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': average_psd[0:626], 
                         'Frequency': frequency_1[0:626], 'Genotype' : [genotype]*626}
-            average_df.append(pd.DataFrame(data=dict_data))
+                average_df.append(pd.DataFrame(data=dict_data))
+            elif len(mean_psd_1) > 0:
+                if animal in GRIN_het_IDs:
+                        genotype = 'GRIN2B'
+                else:
+                        genotype = 'WT'
+                dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': mean_psd_1[0:626], 
+                        'Frequency': frequency_1[0:626], 'Genotype' : [genotype]*626}
+                average_df.append(pd.DataFrame(data=dict_data))
+            elif len(mean_psd_2) > 0: 
+                if animal in GRIN_het_IDs:
+                        genotype = 'GRIN2B'
+                else:
+                        genotype = 'WT'
+                dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': mean_psd_2[0:626], 
+                        'Frequency': frequency_1[0:626], 'Genotype' : [genotype]*626}
+                average_df.append(pd.DataFrame(data=dict_data))
+            else:
+                pass 
+
     else:
         print(str(animal) + ' seizure pipeline beginning')
         prepare_GRIN2B = PrepareGRIN2B(directory_path, animal)
@@ -105,19 +126,39 @@ for animal in br_animal_IDs:
             noisy_epochs_plot = average_noisy_epochs.tolist()
             save_plot_as_psd = str(animal) + '_' + str(channelnumber) + '_cleanepochs_'
             save_plot_as_noise = str(animal) + '_' + str(channelnumber) + '_noisyepochs_'
-            plots_ = power_1.plotting_psd(psd_plot, frequency_1, save_plot_directory, save_plot_as_psd)
-            plots_noisy = power_1.plotting_psd(noisy_epochs_plot, frequency_1, save_plot_directory, save_plot_as_noise)    
-            results = pd.DataFrame(data = {'Power_1': mean_psd_1, 'Power_2': mean_psd_2})
-            average_psd = results[['Power_1', 'Power_2']].mean(axis = 1)
-            if animal in GRIN_het_IDs:
-                    genotype = 'GRIN2B'
-            else:
-                    genotype = 'WT'
-            dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': average_psd[0:626], 
+            #plots_ = power_1.plotting_psd(psd_plot, frequency_1, save_plot_directory, save_plot_as_psd)
+            #plots_noisy = power_1.plotting_psd(noisy_epochs_plot, frequency_1, save_plot_directory, save_plot_as_noise)    
+            if len(mean_psd_1) > 0 and len(mean_psd_2) > 0 :
+                results = pd.DataFrame(data = {'Power_1': mean_psd_1, 'Power_2': mean_psd_2})
+                average_psd = results[['Power_1', 'Power_2']].mean(axis = 1)
+                if animal in GRIN_het_IDs:
+                        genotype = 'GRIN2B'
+                else:
+                        genotype = 'WT'
+                dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': average_psd[0:626], 
                         'Frequency': frequency_1[0:626], 'Genotype' : [genotype]*626}
-            average_df.append(pd.DataFrame(data=dict_data))
+                average_df.append(pd.DataFrame(data=dict_data))
+            elif len(mean_psd_1) > 0:
+                if animal in GRIN_het_IDs:
+                        genotype = 'GRIN2B'
+                else:
+                        genotype = 'WT'
+                dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': mean_psd_1[0:626], 
+                        'Frequency': frequency_1[0:626], 'Genotype' : [genotype]*626}
+                average_df.append(pd.DataFrame(data=dict_data))
+            elif len(mean_psd_2) > 0: 
+                if animal in GRIN_het_IDs:
+                        genotype = 'GRIN2B'
+                else:
+                        genotype = 'WT'
+                dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': mean_psd_2[0:626], 
+                        'Frequency': frequency_1[0:626], 'Genotype' : [genotype]*626}
+                average_df.append(pd.DataFrame(data=dict_data))
+            else:
+                pass 
 
-average_df = pd.concat(average_df, axis = 0).drop_duplicates().reset_index(drop = True)
-os.chdir('/home/melissa/RESULTS/GRIN2B/wake_cleaning')
-average_df.to_csv(str(brain_state_number) + '_testing_cleaning_4/11.csv', index = True)
+
+average_df = pd.concat(average_df, axis = 0).drop_duplicates().reset_index(drop = True) 
+os.chdir('/home/melissa/RESULTS/GRIN2B/WAKE/wake_cleaning')
+average_df.to_csv(str(brain_state_number) + '_testing_cleaning_4_11.csv', index = True)
 
