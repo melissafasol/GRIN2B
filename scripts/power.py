@@ -14,7 +14,7 @@ class PowerSpectrum:
         self.welch_channel = []
 
         
-    def average_psd(self, average): 
+    def average_psd(self, average, cleaning, save_directory, animal, channel): 
         if average == 'True':
             for data_array in self.data_without_noise:
                 power_calculations = scipy.signal.welch(data_array, window = 'hann', fs = 250.4, nperseg = self.nperseg)
@@ -27,13 +27,24 @@ class PowerSpectrum:
         else:
             threshold_power = []
             noisy_epochs = []
-            for data_array in self.data_without_noise:
-                power_calculations = scipy.signal.welch(data_array, window = 'hann', fs = 250.4, nperseg = self.nperseg)
+            for data_array in enumerate(self.data_without_noise):
+                power_calculations = scipy.signal.welch(data_array[1], window = 'hann', fs = 250.4, nperseg = self.nperseg)
                 frequency = power_calculations[0]
                 if mean(power_calculations[1]) > 1000 or mean(power_calculations[1]) < 0.00001:
                     noisy_epochs.append(power_calculations[1])
                 else:
                     threshold_power.append(power_calculations[1])
+                    plot_per_epoch = power_calculations[1]
+                    print('test plot') 
+                    plt.semilogy(frequency[0:626], plot_per_epoch[0:626])
+                    plt.yscale('log')
+                    plt.xlim(0, 100)
+                    plt.ylim(10**-5, 10**5)
+                    os.chdir(save_directory)
+                    plt.savefig('epoch_number' + str(data_array[0]) + '_' + str(animal) + '_' + str(channel) + 'wake_testing_thresholds.jpg')
+                    plt.clf()
+                        
+       
             df_psd = pd.DataFrame(threshold_power)
             mean_values = df_psd.mean(axis = 0)
             mean_psd = mean_values.to_numpy()
