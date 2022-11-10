@@ -126,6 +126,6 @@ channel_dict = {'right_hem': [0, 2, 3, 4, 5, 6, 7],
 #red = visual channels
 #orange = motor channels
 #teal = somatosensory channels
-channels_colors_dict= {0 : 'teal', 2 :'lightblue', 3 : 'lightblue', 4: 'lightblue', 5: 'darkred',
+channels_colors_dict= {0 : 'teal', 2 :'orangered', 3 : 'orangered', 4: 'orangered', 5: 'darkred',
               6 : 'darkred', 7 : 'teal', 8: 'darkred', 9:'darkred', 10: 'teal',
-              11: 'lightblue', 12: 'lightblue', 13: 'lightblue', 15 : 'teal'}
+              11: 'orangered', 12: 'orangered', 13: 'orangered', 15 : 'teal'}

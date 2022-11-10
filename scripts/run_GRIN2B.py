@@ -13,15 +13,16 @@ from preproc2_extractbrainstate import ExtractBrainStateIndices
 
 directory_path = '/home/melissa/PREPROCESSING/GRIN2B/GRIN2B_numpy'
 seizure_br_path = '/home/melissa/PREPROCESSING/GRIN2B/seizures'
-brain_state_number = 1
+brain_state_number = 0
 channel_number_list =  [0,2,3,4,5,6,7,8,9,10,11,12,13,15]
 seizure_epochs = []
 average_df = []
 animals_exclude_seizures = ['140', '238', '362', '365', '375', '378', '401', '402', '404']
-noisy_animal_test = ['364']
-save_path = '/home/melissa/RESULTS/GRIN2B/WAKE/wake_cleaning'
-testing_noisy_epoch = '/home/melissa/RESULTS/GRIN2B/Power/WAKE/wake_noisy_epochs_v4'
+noisy_animal_test = ['228']
 
+save_path = '/home/melissa/RESULTS/GRIN2B/Power/WAKE/'
+save_path_fig = '/home/melissa/RESULTS/GRIN2B/Power/WAKE/wake_noisy_epochs_v4'
+save_file_as = 'testing_removing_additional_seizure_epochs_228.csv'
 
 for animal in noisy_animal_test:
     if animal in animals_exclude_seizures:
@@ -47,8 +48,8 @@ for animal in noisy_animal_test:
             print('filtering complete')
             power_1 = PowerSpectrum(filtered_data_1, nperseg=1252)
             power_2 = PowerSpectrum(filtered_data_2, nperseg=1252)
-            mean_psd_1, frequency_1, noisy_epochs_1 = power_1.average_psd(average='False', cleaning = 'True', save_directory = testing_noisy_epoch, animal = animal, channel = channelnumber)
-            mean_psd_2, frequency_2, noisy_epochs_2 = power_2.average_psd(average='False', cleaning = 'True', save_directory = testing_noisy_epoch, animal = animal, channel = channelnumber)
+            mean_psd_1, frequency_1, noisy_epochs_1 = power_1.average_psd(average='False', cleaning = 'True', save_directory = save_path_fig, animal = animal, channel = channelnumber)
+            mean_psd_2, frequency_2, noisy_epochs_2 = power_2.average_psd(average='False', cleaning = 'True', save_directory = save_path_fig, animal = animal, channel = channelnumber)
             results_psd = pd.DataFrame(data = {'Power_1': mean_psd_1, 'Power_2': mean_psd_2})
             results_noisy_epochs = pd.DataFrame(data = {'Power_1': noisy_epochs_1, 'Power_2': noisy_epochs_2})
             average_psd = results_psd[['Power_1', 'Power_2']].mean(axis = 1)
@@ -107,8 +108,10 @@ for animal in noisy_animal_test:
             timevalues_array_1 = extract_brain_state_1.get_data_indices(epoch_indices_1)
             timevalues_array_2 = extract_brain_state_2.get_data_indices(epoch_indices_2)
             seizure_epochs_1 = removing_seizure_epochs(br_1, timevalues_array_1)
+            print('seizure epochs')
             seizure_epochs_2 = removing_seizure_epochs(br_2, timevalues_array_2)
             clean_epochs_1 = clean_indices(timevalues_array_1, seizure_epochs_1)
+            print('clean epochs')
             clean_epochs_2 = clean_indices(timevalues_array_2, seizure_epochs_2)
             print('all data loaded for ' + str(animal) + ' channel number ' + str(channelnumber))
             filter_1 = Filter(data_1, clean_epochs_1)
@@ -118,10 +121,8 @@ for animal in noisy_animal_test:
             print('filtering complete')
             power_1 = PowerSpectrum(filtered_data_1, nperseg=1252)
             power_2 = PowerSpectrum(filtered_data_2, nperseg=1252)  
-            mean_psd_1, frequency_1, noisy_epochs_1 = power_1.average_psd(average='False', cleaning = 'True', save_directory = testing_noisy_epoch, animal = animal, channel = channelnumber)
-            mean_psd_2, frequency_2, noisy_epochs_2 = power_2.average_psd(average='False', cleaning = 'True', save_directory = testing_noisy_epoch, animal = animal, channel = channelnumber)
-            print(len(mean_psd_2))
-            print(len(mean_psd_1))
+            mean_psd_1, frequency_1, noisy_epochs_1 = power_1.average_psd(average='False', cleaning = 'True', save_directory = save_path_fig, animal = animal, channel = channelnumber)
+            mean_psd_2, frequency_2, noisy_epochs_2 = power_2.average_psd(average='False', cleaning = 'True', save_directory = save_path_fig, animal = animal, channel = channelnumber)
             results_psd = pd.DataFrame(data = {'Power_1': mean_psd_1, 'Power_2': mean_psd_2})
             results_noisy_epochs = pd.DataFrame(data = {'Power_1': noisy_epochs_1, 'Power_2': noisy_epochs_2})
             average_psd = results_psd[['Power_1', 'Power_2']].mean(axis = 1)
@@ -162,7 +163,7 @@ for animal in noisy_animal_test:
                 pass 
 
 
-#average_df = pd.concat(average_df, axis = 0).drop_duplicates().reset_index(drop = True) 
-#os.chdir(save_path)
-#average_df.to_csv(str(brain_state_number) + '_testing_cleaning_4_11.csv', index = True)
+average_df = pd.concat(average_df, axis = 0).drop_duplicates().reset_index(drop = True) 
+os.chdir(save_path)
+average_df.to_csv(save_file_as, index = True)
 
