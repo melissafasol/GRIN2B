@@ -77,8 +77,8 @@ def removing_seizure_epochs(seizure_br_file, wake_indices):
     for seizure_epoch in sample_rate_indices:
         if seizure_epoch in wake_indices:
             epoch_bins = 1252    
-            preceding_epochs = [seizure_epoch - epoch_bins*2, seizure_epoch - epoch_bins]
-            following_epochs = [seizure_epoch + epoch_bins, seizure_epoch + epoch_bins*2]
+            preceding_epochs = [seizure_epoch - epoch_bins*8,seizure_epoch - epoch_bins*7,seizure_epoch - epoch_bins*6,seizure_epoch - epoch_bins*5, seizure_epoch - epoch_bins*4, seizure_epoch - epoch_bins*3, seizure_epoch - epoch_bins*2, seizure_epoch - epoch_bins]
+            following_epochs = [seizure_epoch + epoch_bins, seizure_epoch + epoch_bins*2, seizure_epoch + epoch_bins*3, seizure_epoch + epoch_bins*4, seizure_epoch + epoch_bins*5, seizure_epoch + epoch_bins*7, seizure_epoch + epoch_bins*8]
             matching_epochs.extend(preceding_epochs + [seizure_epoch] + following_epochs)
             
     return matching_epochs

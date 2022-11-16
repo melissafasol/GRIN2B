@@ -30,7 +30,7 @@ class PowerSpectrum:
             for data_array in enumerate(self.data_without_noise):
                 power_calculations = scipy.signal.welch(data_array[1], window = 'hann', fs = 250.4, nperseg = self.nperseg)
                 frequency = power_calculations[0]
-                if mean(power_calculations[1]) > 1000 or mean(power_calculations[1]) < 0.00001:
+                if mean(power_calculations[1][30:40]) > 1000 or mean(power_calculations[1]) < 0.00001:
                     noisy_epochs.append(power_calculations[1])
                 else:
                     threshold_power.append(power_calculations[1])

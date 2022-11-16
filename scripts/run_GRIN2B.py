@@ -18,11 +18,11 @@ channel_number_list =  [0,2,3,4,5,6,7,8,9,10,11,12,13,15]
 seizure_epochs = []
 average_df = []
 animals_exclude_seizures = ['140', '238', '362', '365', '375', '378', '401', '402', '404']
-noisy_animal_test = ['228']
+noisy_animal_test = ['364', '367', '373']
 
 save_path = '/home/melissa/RESULTS/GRIN2B/Power/WAKE/'
 save_path_fig = '/home/melissa/RESULTS/GRIN2B/Power/WAKE/wake_noisy_epochs_v4'
-save_file_as = 'testing_removing_additional_seizure_epochs_228.csv'
+save_file_as = 'testing_removing_additional_seizure_epochs_v4.csv'
 
 for animal in noisy_animal_test:
     if animal in animals_exclude_seizures:
