@@ -1,4 +1,6 @@
 import sys 
+import numpy as np
+import pylab
 
 sys.path.insert(0, '/home/melissa/PROJECT_DIRECTORIES/taini_main/scripts/Preprocessing')
 from preproc1_preparefiles import PrepareFiles, LoadFromStart
@@ -77,8 +79,8 @@ def removing_seizure_epochs(seizure_br_file, wake_indices):
     for seizure_epoch in sample_rate_indices:
         if seizure_epoch in wake_indices:
             epoch_bins = 1252    
-            preceding_epochs = [seizure_epoch - epoch_bins*8,seizure_epoch - epoch_bins*7,seizure_epoch - epoch_bins*6,seizure_epoch - epoch_bins*5, seizure_epoch - epoch_bins*4, seizure_epoch - epoch_bins*3, seizure_epoch - epoch_bins*2, seizure_epoch - epoch_bins]
-            following_epochs = [seizure_epoch + epoch_bins, seizure_epoch + epoch_bins*2, seizure_epoch + epoch_bins*3, seizure_epoch + epoch_bins*4, seizure_epoch + epoch_bins*5, seizure_epoch + epoch_bins*7, seizure_epoch + epoch_bins*8]
+            preceding_epochs = [seizure_epoch - epoch_bins*2, seizure_epoch - epoch_bins]
+            following_epochs = [seizure_epoch + epoch_bins, seizure_epoch + epoch_bins*2]
             matching_epochs.extend(preceding_epochs + [seizure_epoch] + following_epochs)
             
     return matching_epochs
@@ -91,3 +93,29 @@ def clean_indices(timevalues_array, seizure_epochs):
             new_indices.append(epoch)
 
     return new_indices
+
+
+def thresholding_algo(y, lag, threshold, influence):
+    signals = np.zeros(len(y))
+    filteredY = np.array(y)
+    avgFilter = [0]*len(y)
+    stdFilter = [0]*len(y)
+    avgFilter[lag - 1] = np.mean(y[0:lag])
+    stdFilter[lag - 1] = np.std(y[0:lag])
+    for i in range(lag, len(y)):
+        if abs(y[i] - avgFilter[i-1]) > threshold * stdFilter [i-1]:
+            if y[i] > avgFilter[i-1]:
+                signals[i] = 1
+            else:
+                signals[i] = -1
+
+            filteredY[i] = influence * y[i] + (1 - influence) * filteredY[i-1]
+            avgFilter[i] = np.mean(filteredY[(i-lag+1):i+1])
+            stdFilter[i] = np.std(filteredY[(i-lag+1):i+1])
+        else:
+            signals[i] = 0
+            filteredY[i] = y[i]
+            avgFilter[i] = np.mean(filteredY[(i-lag+1):i+1])
+            stdFilter[i] = np.std(filteredY[(i-lag+1):i+1])
+
+    return np.asarray(signals),np.asarray(avgFilter),np.asarray(stdFilter)
