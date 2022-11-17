@@ -14,7 +14,7 @@ class PowerSpectrum:
         self.welch_channel = []
 
         
-    def average_psd(self, average, cleaning, save_directory, animal, channel): 
+    def average_psd(self, average): 
         if average == 'True':
             for data_array in self.data_without_noise:
                 power_calculations = scipy.signal.welch(data_array, window = 'hann', fs = 250.4, nperseg = self.nperseg)
@@ -34,7 +34,7 @@ class PowerSpectrum:
                     noisy_epochs.append(power_calculations[1])
                 else:
                     threshold_power.append(power_calculations[1])
-                    plot_per_epoch = power_calculations[1]
+                    #plot_per_epoch = power_calculations[1]
                     #print('test plot') 
                     #plt.semilogy(frequency[0:626], plot_per_epoch[0:626])
                     #plt.yscale('log')
@@ -113,5 +113,6 @@ class RemoveNoisyEpochs:
         else:
             pass
         return self.psd
-        
+    
+
         

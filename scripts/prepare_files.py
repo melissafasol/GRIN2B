@@ -1,4 +1,6 @@
 import sys 
+from scipy import stats
+from scipy import signal
 import numpy as np
 import pylab
 
@@ -119,3 +121,18 @@ def thresholding_algo(y, lag, threshold, influence):
             stdFilter[i] = np.std(filteredY[(i-lag+1):i+1])
 
     return np.asarray(signals),np.asarray(avgFilter),np.asarray(stdFilter)
+
+def harmonics_algo(filtered_data):
+    noisy_epochs = []
+    for epoch_idx, epoch in enumerate(filtered_data):
+        power_calculations = signal.welch(epoch, window = 'hann', fs = 250.4, nperseg = 1252)
+        signals, avgfilter, stdfilter = thresholding_algo(y = power_calculations[1], lag = 30, threshold = 5, influence = 0)
+        for first_harmonic,second_harmonic in zip(signals[25:50], signals[75:100]):
+            if first_harmonic == 1 and second_harmonic == 1:
+                noisy_epochs.append(epoch_idx)
+    res = [*set(noisy_epochs)]
+    
+    for epoch in sorted(res, reverse=True):
+        del filtered_data[epoch]
+        
+    return filtered_data

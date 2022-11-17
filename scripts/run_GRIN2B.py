@@ -1,10 +1,10 @@
 import os 
 import numpy as np 
 import pandas as pd
-from scipy import average, gradient
+from scipy import average, gradient, signal
 import sys 
 from GRIN2B_constants import start_time_GRIN2B_baseline, end_time_GRIN2B_baseline, br_animal_IDs, seizure_free_IDs, GRIN_het_IDs
-from prepare_files import PrepareGRIN2B, LoadGRIN2B, removing_seizure_epochs, clean_indices
+from prepare_files import PrepareGRIN2B, LoadGRIN2B, removing_seizure_epochs, clean_indices, thresholding_algo, harmonics_algo
 from power import PowerSpectrum, RemoveNoisyEpochs
 from filter import Filter
 
@@ -21,8 +21,9 @@ animals_exclude_seizures = ['140', '238', '362', '365', '375', '378', '401', '40
 noisy_animal_test = ['364', '367', '373']
 
 save_path = '/home/melissa/RESULTS/GRIN2B/Power/WAKE/'
-save_path_fig = '/home/melissa/RESULTS/GRIN2B/Power/WAKE/wake_noisy_epochs_v4'
-save_file_as = 'testing_removing_additional_seizure_epochs_v4.csv'
+save_file_as = 'testing_harmonics_algo.csv'
+
+
 
 for animal in noisy_animal_test:
     if animal in animals_exclude_seizures:
@@ -45,11 +46,14 @@ for animal in noisy_animal_test:
             filter_2 = Filter(data_2, timevalues_array_2)
             filtered_data_1 = filter_1.butter_bandpass(seizure = 'False')
             filtered_data_2 = filter_2.butter_bandpass(seizure = 'False')
+            if brain_state_number == 0:
+                filtered_data_1 = harmonics_algo(filtered_data_1)
+                filtered_data_2 = harmonics_algo(filtered_data_2)
             print('filtering complete')
             power_1 = PowerSpectrum(filtered_data_1, nperseg=1252)
             power_2 = PowerSpectrum(filtered_data_2, nperseg=1252)
-            mean_psd_1, frequency_1, noisy_epochs_1 = power_1.average_psd(average='False', cleaning = 'True', save_directory = save_path_fig, animal = animal, channel = channelnumber)
-            mean_psd_2, frequency_2, noisy_epochs_2 = power_2.average_psd(average='False', cleaning = 'True', save_directory = save_path_fig, animal = animal, channel = channelnumber)
+            mean_psd_1, frequency_1, noisy_epochs_1 = power_1.average_psd(average='False')
+            mean_psd_2, frequency_2, noisy_epochs_2 = power_2.average_psd(average='False')
             results_psd = pd.DataFrame(data = {'Power_1': mean_psd_1, 'Power_2': mean_psd_2})
             results_noisy_epochs = pd.DataFrame(data = {'Power_1': noisy_epochs_1, 'Power_2': noisy_epochs_2})
             average_psd = results_psd[['Power_1', 'Power_2']].mean(axis = 1)
@@ -58,8 +62,6 @@ for animal in noisy_animal_test:
             noisy_epochs_plot = average_noisy_epochs.tolist()
             save_plot_as_psd = str(animal) + '_' + str(channelnumber) + '_cleanepochs_'
             save_plot_as_noise = str(animal) + '_' + str(channelnumber) + '_noisyepochs_'
-            #plots_ = power_1.plotting_psd(psd_plot, frequency_1, save_plot_directory, save_plot_as_psd)
-            #plots_noisy = power_1.plotting_psd(noisy_epochs_plot, frequency_1, save_plot_directory, save_plot_as_noise)
             if len(mean_psd_1) > 0 and len(mean_psd_2) > 0 :
                 results = pd.DataFrame(data = {'Power_1': mean_psd_1, 'Power_2': mean_psd_2})
                 average_psd = results[['Power_1', 'Power_2']].mean(axis = 1)
@@ -118,11 +120,14 @@ for animal in noisy_animal_test:
             filter_2 = Filter(data_2, clean_epochs_2)
             filtered_data_1 = filter_1.butter_bandpass(seizure = 'False')
             filtered_data_2 = filter_2.butter_bandpass(seizure= 'False')
+            if brain_state_number == 0:
+                filtered_data_1 = harmonics_algo(filtered_data_1)
+                filtered_data_2 = harmonics_algo(filtered_data_2)
             print('filtering complete')
             power_1 = PowerSpectrum(filtered_data_1, nperseg=1252)
             power_2 = PowerSpectrum(filtered_data_2, nperseg=1252)  
-            mean_psd_1, frequency_1, noisy_epochs_1 = power_1.average_psd(average='False', cleaning = 'True', save_directory = save_path_fig, animal = animal, channel = channelnumber)
-            mean_psd_2, frequency_2, noisy_epochs_2 = power_2.average_psd(average='False', cleaning = 'True', save_directory = save_path_fig, animal = animal, channel = channelnumber)
+            mean_psd_1, frequency_1, noisy_epochs_1 = power_1.average_psd(average='False')
+            mean_psd_2, frequency_2, noisy_epochs_2 = power_2.average_psd(average='False')
             results_psd = pd.DataFrame(data = {'Power_1': mean_psd_1, 'Power_2': mean_psd_2})
             results_noisy_epochs = pd.DataFrame(data = {'Power_1': noisy_epochs_1, 'Power_2': noisy_epochs_2})
             average_psd = results_psd[['Power_1', 'Power_2']].mean(axis = 1)
@@ -130,9 +135,7 @@ for animal in noisy_animal_test:
             psd_plot = average_psd.tolist()
             noisy_epochs_plot = average_noisy_epochs.tolist()
             save_plot_as_psd = str(animal) + '_' + str(channelnumber) + '_cleanepochs_'
-            save_plot_as_noise = str(animal) + '_' + str(channelnumber) + '_noisyepochs_'
-            #plots_ = power_1.plotting_psd(psd_plot, frequency_1, save_plot_directory, save_plot_as_psd)
-            #plots_noisy = power_1.plotting_psd(noisy_epochs_plot, frequency_1, save_plot_directory, save_plot_as_noise)    
+            save_plot_as_noise = str(animal) + '_' + str(channelnumber) + '_noisyepochs_'  
             if len(mean_psd_1) > 0 and len(mean_psd_2) > 0 :
                 results = pd.DataFrame(data = {'Power_1': mean_psd_1, 'Power_2': mean_psd_2})
                 average_psd = results[['Power_1', 'Power_2']].mean(axis = 1)
