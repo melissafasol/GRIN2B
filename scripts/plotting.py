@@ -29,7 +29,7 @@ def plot_by_channel(dataframe_to_plot, genotype, sleepstage, save_path, plots_li
                 axs[1].set_xlim(1, 100)
                 axs[0].set(xlabel = 'Frequency')
                 axs[1].set(xlabel = 'Frequency')
-                axs[0].set_ylim(10**-2, 10**5)
+                axs[0].set_ylim(10**-3, 10**5)
                 axs[0].set(ylabel = 'PSD [V**2/Hz]')
             for row_idx in range(1):
                 for col_idx in range(2):

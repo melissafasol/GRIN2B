@@ -18,14 +18,13 @@ channel_number_list =  [0,2,3,4,5,6,7,8,9,10,11,12,13,15]
 seizure_epochs = []
 average_df = []
 animals_exclude_seizures = ['140', '238', '362', '365', '375', '378', '401', '402', '404']
-noisy_animal_test = ['364', '367', '373']
+noisy_animal_test = ['364']
 
-save_path = '/home/melissa/RESULTS/GRIN2B/Power/WAKE/'
-save_file_as = 'testing_harmonics_algo.csv'
+save_path = '/home/melissa/RESULTS/GRIN2B/Power/WAKE/harmonics_algo'
+save_file_as = '_harmonics_algo.csv'
 
 
-
-for animal in noisy_animal_test:
+for animal in br_animal_IDs:
     if animal in animals_exclude_seizures:
         print(str(animal) + ' in seizure free id')
         prepare_GRIN2B = PrepareGRIN2B(directory_path, animal)
@@ -47,21 +46,15 @@ for animal in noisy_animal_test:
             filtered_data_1 = filter_1.butter_bandpass(seizure = 'False')
             filtered_data_2 = filter_2.butter_bandpass(seizure = 'False')
             if brain_state_number == 0:
-                filtered_data_1 = harmonics_algo(filtered_data_1)
-                filtered_data_2 = harmonics_algo(filtered_data_2)
-            print('filtering complete')
-            power_1 = PowerSpectrum(filtered_data_1, nperseg=1252)
-            power_2 = PowerSpectrum(filtered_data_2, nperseg=1252)
-            mean_psd_1, frequency_1, noisy_epochs_1 = power_1.average_psd(average='False')
-            mean_psd_2, frequency_2, noisy_epochs_2 = power_2.average_psd(average='False')
-            results_psd = pd.DataFrame(data = {'Power_1': mean_psd_1, 'Power_2': mean_psd_2})
-            results_noisy_epochs = pd.DataFrame(data = {'Power_1': noisy_epochs_1, 'Power_2': noisy_epochs_2})
-            average_psd = results_psd[['Power_1', 'Power_2']].mean(axis = 1)
-            average_noisy_epochs = results_noisy_epochs[['Power_1', 'Power_2']].mean(axis = 1)
-            psd_plot = average_psd.tolist()
-            noisy_epochs_plot = average_noisy_epochs.tolist()
-            save_plot_as_psd = str(animal) + '_' + str(channelnumber) + '_cleanepochs_'
-            save_plot_as_noise = str(animal) + '_' + str(channelnumber) + '_noisyepochs_'
+                noisy_indices_1, mean_psd_1, frequency_1 = harmonics_algo(filtered_data_1)
+                noisy_indices_2, mean_psd_2, frequency_2 = harmonics_algo(filtered_data_2)
+                print('filtering complete')
+            else: 
+                power_1 = PowerSpectrum(filtered_data_1, nperseg=1252)
+                power_2 = PowerSpectrum(filtered_data_2, nperseg=1252)
+                mean_psd_1, frequency_1, noisy_epochs_1 = power_1.average_psd(average='False')
+                mean_psd_2, frequency_2, noisy_epochs_2 = power_2.average_psd(average='False')
+                results_psd = pd.DataFrame(data = {'Power_1': mean_psd_1, 'Power_2': mean_psd_2})
             if len(mean_psd_1) > 0 and len(mean_psd_2) > 0 :
                 results = pd.DataFrame(data = {'Power_1': mean_psd_1, 'Power_2': mean_psd_2})
                 average_psd = results[['Power_1', 'Power_2']].mean(axis = 1)
@@ -72,6 +65,8 @@ for animal in noisy_animal_test:
                 dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': average_psd[0:626], 
                         'Frequency': frequency_1[0:626], 'Genotype' : [genotype]*626}
                 average_df.append(pd.DataFrame(data=dict_data))
+                os.chdir(save_path)
+                average_df.to_csv(str(animal) + '_' +'channel_average_mean_' + save_file_as)
             elif len(mean_psd_1) > 0:
                 if animal in GRIN_het_IDs:
                         genotype = 'GRIN2B'
@@ -80,6 +75,8 @@ for animal in noisy_animal_test:
                 dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': mean_psd_1[0:626], 
                         'Frequency': frequency_1[0:626], 'Genotype' : [genotype]*626}
                 average_df.append(pd.DataFrame(data=dict_data))
+                os.chdir(save_path)
+                average_df.to_csv(str(animal) + '_' +'channel' + '_mean_1' + save_file_as)
             elif len(mean_psd_2) > 0: 
                 if animal in GRIN_het_IDs:
                         genotype = 'GRIN2B'
@@ -88,6 +85,8 @@ for animal in noisy_animal_test:
                 dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': mean_psd_2[0:626], 
                         'Frequency': frequency_1[0:626], 'Genotype' : [genotype]*626}
                 average_df.append(pd.DataFrame(data=dict_data))
+                os.chdir(save_path)
+                average_df.to_csv(str(animal) + '_' +'channel' + '_mean_2' + save_file_as)
             else:
                 pass 
 
@@ -121,24 +120,19 @@ for animal in noisy_animal_test:
             filtered_data_1 = filter_1.butter_bandpass(seizure = 'False')
             filtered_data_2 = filter_2.butter_bandpass(seizure= 'False')
             if brain_state_number == 0:
-                filtered_data_1 = harmonics_algo(filtered_data_1)
-                filtered_data_2 = harmonics_algo(filtered_data_2)
-            print('filtering complete')
-            power_1 = PowerSpectrum(filtered_data_1, nperseg=1252)
-            power_2 = PowerSpectrum(filtered_data_2, nperseg=1252)  
-            mean_psd_1, frequency_1, noisy_epochs_1 = power_1.average_psd(average='False')
-            mean_psd_2, frequency_2, noisy_epochs_2 = power_2.average_psd(average='False')
-            results_psd = pd.DataFrame(data = {'Power_1': mean_psd_1, 'Power_2': mean_psd_2})
-            results_noisy_epochs = pd.DataFrame(data = {'Power_1': noisy_epochs_1, 'Power_2': noisy_epochs_2})
-            average_psd = results_psd[['Power_1', 'Power_2']].mean(axis = 1)
-            average_noisy_epochs = results_noisy_epochs[['Power_1', 'Power_2']].mean(axis = 1)
-            psd_plot = average_psd.tolist()
-            noisy_epochs_plot = average_noisy_epochs.tolist()
-            save_plot_as_psd = str(animal) + '_' + str(channelnumber) + '_cleanepochs_'
-            save_plot_as_noise = str(animal) + '_' + str(channelnumber) + '_noisyepochs_'  
+                    noisy_indices_1, mean_psd_1, frequency_1 = harmonics_algo(filtered_data_1)
+                    noisy_indices_2, mean_psd_2, frequency_2 = harmonics_algo(filtered_data_2)
+                    print('filtering complete')
+            else: 
+                power_1 = PowerSpectrum(filtered_data_1, nperseg=1252)
+                power_2 = PowerSpectrum(filtered_data_2, nperseg=1252)
+                mean_psd_1, frequency_1, noisy_epochs_1 = power_1.average_psd(average='False')
+                mean_psd_2, frequency_2, noisy_epochs_2 = power_2.average_psd(average='False')
+                results_psd = pd.DataFrame(data = {'Power_1': mean_psd_1, 'Power_2': mean_psd_2})
             if len(mean_psd_1) > 0 and len(mean_psd_2) > 0 :
                 results = pd.DataFrame(data = {'Power_1': mean_psd_1, 'Power_2': mean_psd_2})
                 average_psd = results[['Power_1', 'Power_2']].mean(axis = 1)
+                average_df.to_csv(str(animal) + '_' +'channel_average_mean_' + save_file_as)
                 if animal in GRIN_het_IDs:
                         genotype = 'GRIN2B'
                 else:
@@ -146,6 +140,8 @@ for animal in noisy_animal_test:
                 dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': average_psd[0:626], 
                         'Frequency': frequency_1[0:626], 'Genotype' : [genotype]*626}
                 average_df.append(pd.DataFrame(data=dict_data))
+                os.chdir(save_path)
+                average_df.to_csv(str(animal) + '_' +'channel_average_' + save_file_as)
             elif len(mean_psd_1) > 0:
                 if animal in GRIN_het_IDs:
                         genotype = 'GRIN2B'
@@ -154,6 +150,8 @@ for animal in noisy_animal_test:
                 dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': mean_psd_1[0:626], 
                         'Frequency': frequency_1[0:626], 'Genotype' : [genotype]*626}
                 average_df.append(pd.DataFrame(data=dict_data))
+                os.chdir(save_path)
+                average_df.to_csv(str(animal) + '_' +'channel_mean_1_' + save_file_as)
             elif len(mean_psd_2) > 0: 
                 if animal in GRIN_het_IDs:
                         genotype = 'GRIN2B'
@@ -162,6 +160,7 @@ for animal in noisy_animal_test:
                 dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': mean_psd_2[0:626], 
                         'Frequency': frequency_1[0:626], 'Genotype' : [genotype]*626}
                 average_df.append(pd.DataFrame(data=dict_data))
+                average_df.to_csv(str(animal) + '_' +'channel_mean_2_' + save_file_as)
             else:
                 pass 
 

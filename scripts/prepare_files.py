@@ -122,17 +122,22 @@ def thresholding_algo(y, lag, threshold, influence):
 
     return np.asarray(signals),np.asarray(avgFilter),np.asarray(stdFilter)
 
+
 def harmonics_algo(filtered_data):
     noisy_epochs = []
+    clean_epochs_power = []
     for epoch_idx, epoch in enumerate(filtered_data):
         power_calculations = signal.welch(epoch, window = 'hann', fs = 250.4, nperseg = 1252)
+        frequency = power_calculations[0]
         signals, avgfilter, stdfilter = thresholding_algo(y = power_calculations[1], lag = 30, threshold = 5, influence = 0)
         for first_harmonic,second_harmonic in zip(signals[25:50], signals[75:100]):
-            if first_harmonic == 1 and second_harmonic == 1:
+            if first_harmonic.mean() > 0 or second_harmonic.mean() > 0 :
                 noisy_epochs.append(epoch_idx)
-    res = [*set(noisy_epochs)]
+            else:
+                clean_epochs_power.append(power_calculations[1])
+    noisy_indices = [*set(noisy_epochs)]
     
-    for epoch in sorted(res, reverse=True):
+    for epoch in sorted(noisy_indices, reverse=True):
         del filtered_data[epoch]
         
-    return filtered_data
+    return noisy_indices, clean_epochs_power, frequency
