@@ -3,9 +3,11 @@ from scipy import stats
 from scipy import signal
 import numpy as np
 import pylab
+import pandas as pd
 
 sys.path.insert(0, '/home/melissa/PROJECT_DIRECTORIES/taini_main/scripts/Preprocessing')
 from preproc1_preparefiles import PrepareFiles, LoadFromStart
+import matplotlib.pyplot as plt
 
 sample_rate = 250.4
 
@@ -57,87 +59,107 @@ class LoadGRIN2B(LoadFromStart):
         return (data_1, data_2)
     
 
-def one_second_timebins(zipped_timevalues,  epoch_length):
-
-    function_timebins = lambda epoch_start, epoch_end: list(range(epoch_start, epoch_end, epoch_length))
+class GRIN2B_Seizures():
     
-    new_epoch_times = [list(map(lambda epoch: function_timebins(int(epoch[0]), int(epoch[1])), (zipped_timevalues)))]
-
-    new_time_array = [time_start for epoch in new_epoch_times for time_start in epoch]
-    one_second_timebins = [time_start for epoch in new_time_array for time_start in epoch]
-    return one_second_timebins
-
-def removing_seizure_epochs(seizure_br_file, wake_indices):
-    
-    def round_to_multiple(number, multiple):
-        return multiple*round(number/multiple)
-    
-    seizure_times_start = seizure_br_file.iloc[:, 0:1].to_numpy().astype(int)
-    seizure_times_start_epochs = [epoch for sublist in seizure_times_start for epoch in sublist]
-    testing_multiples = [round_to_multiple(i, 5) for i in seizure_times_start_epochs] 
-    sample_rate_indices = [int(epoch*250.4) for epoch in testing_multiples]
-    
-    matching_epochs = []
-    for seizure_epoch in sample_rate_indices:
-        if seizure_epoch in wake_indices:
-            epoch_bins = 1252    
-            preceding_epochs = [seizure_epoch - epoch_bins*2, seizure_epoch - epoch_bins]
-            following_epochs = [seizure_epoch + epoch_bins, seizure_epoch + epoch_bins*2]
-            matching_epochs.extend(preceding_epochs + [seizure_epoch] + following_epochs)
-            
-    return matching_epochs
-
-
-def clean_indices(timevalues_array, seizure_epochs):
-    new_indices = []
-    for epoch in timevalues_array:
-        if epoch not in seizure_epochs:
-            new_indices.append(epoch)
-
-    return new_indices
-
-
-def thresholding_algo(y, lag, threshold, influence):
-    signals = np.zeros(len(y))
-    filteredY = np.array(y)
-    avgFilter = [0]*len(y)
-    stdFilter = [0]*len(y)
-    avgFilter[lag - 1] = np.mean(y[0:lag])
-    stdFilter[lag - 1] = np.std(y[0:lag])
-    for i in range(lag, len(y)):
-        if abs(y[i] - avgFilter[i-1]) > threshold * stdFilter [i-1]:
-            if y[i] > avgFilter[i-1]:
-                signals[i] = 1
-            else:
-                signals[i] = -1
-
-            filteredY[i] = influence * y[i] + (1 - influence) * filteredY[i-1]
-            avgFilter[i] = np.mean(filteredY[(i-lag+1):i+1])
-            stdFilter[i] = np.std(filteredY[(i-lag+1):i+1])
-        else:
-            signals[i] = 0
-            filteredY[i] = y[i]
-            avgFilter[i] = np.mean(filteredY[(i-lag+1):i+1])
-            stdFilter[i] = np.std(filteredY[(i-lag+1):i+1])
-
-    return np.asarray(signals),np.asarray(avgFilter),np.asarray(stdFilter)
-
-
-def harmonics_algo(filtered_data):
-    noisy_epochs = []
-    clean_epochs_power = []
-    for epoch_idx, epoch in enumerate(filtered_data):
-        power_calculations = signal.welch(epoch, window = 'hann', fs = 250.4, nperseg = 1252)
-        frequency = power_calculations[0]
-        signals, avgfilter, stdfilter = thresholding_algo(y = power_calculations[1], lag = 30, threshold = 5, influence = 0)
-        for first_harmonic,second_harmonic in zip(signals[25:50], signals[75:100]):
-            if first_harmonic.mean() > 0 or second_harmonic.mean() > 0 :
-                noisy_epochs.append(epoch_idx)
-            else:
-                clean_epochs_power.append(power_calculations[1])
-    noisy_indices = [*set(noisy_epochs)]
-    
-    for epoch in sorted(noisy_indices, reverse=True):
-        del filtered_data[epoch]
+    def __init__(self, timevalues_array, br_file, epoch_length):
+        self.timevalues_array = timevalues_array
+        self.br_file = br_file
+        self.epoch_length = epoch_length
         
-    return noisy_indices, clean_epochs_power, frequency
+    def one_second_timebins(self, epoch_length):
+
+        function_timebins = lambda epoch_start, epoch_end: list(range(epoch_start, epoch_end, epoch_length))
+    
+        new_epoch_times = [list(map(lambda epoch: function_timebins(int(epoch[0]), int(epoch[1])), (self.timevalues_array)))]
+
+        new_time_array = [time_start for epoch in new_epoch_times for time_start in epoch]
+        one_second_timebins = [time_start for epoch in new_time_array for time_start in epoch]
+        return one_second_timebins
+    
+    
+    def removing_seizure_epochs(self, wake_indices):
+    
+        def round_to_multiple(number, multiple):
+            return multiple*round(number/multiple)
+    
+        seizure_times_start = self.br_file.iloc[:, 0:1].to_numpy().astype(int)
+        seizure_times_start_epochs = [epoch for sublist in seizure_times_start for epoch in sublist]
+        testing_multiples = [round_to_multiple(i, 5) for i in seizure_times_start_epochs] 
+        sample_rate_indices = [int(epoch*250.4) for epoch in testing_multiples]
+    
+        preceding_ictal_epochs = []
+        following_ictal_epochs = []
+        all_ictal_epochs = []
+        
+        for seizure_epoch in sample_rate_indices:
+            if seizure_epoch in wake_indices:
+                epoch_bins = 1252    
+                preceding_epochs = [seizure_epoch - epoch_bins*5, seizure_epoch - epoch_bins*4, seizure_epoch - epoch_bins*3, seizure_epoch - epoch_bins*2, seizure_epoch - epoch_bins]
+                following_epochs = [seizure_epoch + epoch_bins, seizure_epoch + epoch_bins*2, seizure_epoch + epoch_bins*3, seizure_epoch + epoch_bins*4, seizure_epoch + epoch_bins*5 ]
+                preceding_ictal_epochs.append(preceding_epochs)
+                following_ictal_epochs.append(following_epochs)
+                all_ictal_epochs.extend(preceding_epochs + [seizure_epoch] + following_epochs)
+            
+        return preceding_ictal_epochs, following_ictal_epochs, all_ictal_epochs
+    
+    
+    def clean_indices(self, all_ictal_epochs):
+        new_indices = []
+        for epoch in self.timevalues_array:
+            if epoch not in all_ictal_epochs:
+                new_indices.append(epoch)
+
+        return new_indices
+
+    
+
+    def thresholding_algo(self, y, lag, threshold, influence):
+        signals = np.zeros(len(y))
+        filteredY = np.array(y)
+        avgFilter = [0]*len(y)
+        stdFilter = [0]*len(y)
+        avgFilter[lag - 1] = np.mean(y[0:lag])
+        stdFilter[lag - 1] = np.std(y[0:lag])
+        for i in range(lag, len(y)):
+            if abs(y[i] - avgFilter[i-1]) > threshold * stdFilter [i-1]:
+                if y[i] > avgFilter[i-1]:
+                    signals[i] = 1
+                else:
+                    signals[i] = -1
+
+                filteredY[i] = influence * y[i] + (1 - influence) * filteredY[i-1]
+                avgFilter[i] = np.mean(filteredY[(i-lag+1):i+1])
+                stdFilter[i] = np.std(filteredY[(i-lag+1):i+1])
+            else:
+                signals[i] = 0
+                filteredY[i] = y[i]
+                avgFilter[i] = np.mean(filteredY[(i-lag+1):i+1])
+                stdFilter[i] = np.std(filteredY[(i-lag+1):i+1])
+
+        return np.asarray(signals),np.asarray(avgFilter),np.asarray(stdFilter)
+
+
+    def harmonics_algo(self, filtered_data):
+        noisy_epochs = []
+        clean_epochs_power = []
+        for epoch_idx, epoch in enumerate(filtered_data):
+            power_calculations = signal.welch(epoch, window = 'hann', fs = 250.4, nperseg = 1252)
+            frequency = power_calculations[0]
+            signals, avgfilter, stdfilter = thresholding_algo(y = power_calculations[1], lag = 30, threshold = 5, influence = 0)
+            for first_harmonic,second_harmonic in zip(signals[25:50], signals[75:100]):
+                if first_harmonic.mean() > 0 or second_harmonic.mean() > 0 :
+                    noisy_epochs.append(epoch_idx)
+                else:
+                    clean_epochs_power.append(power_calculations[1])
+        
+                
+        noisy_indices = [*set(noisy_epochs)]
+    
+        for epoch in sorted(noisy_indices, reverse=True):
+            del filtered_data[epoch]
+        
+        df_psd = pd.DataFrame(clean_epochs_power)
+        mean_values = df_psd.mean(axis = 0)
+        mean_psd = mean_values.to_numpy()
+                
+        return noisy_indices, mean_psd, frequency

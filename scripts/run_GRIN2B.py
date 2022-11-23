@@ -64,9 +64,10 @@ for animal in br_animal_IDs:
                         genotype = 'WT'
                 dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': average_psd[0:626], 
                         'Frequency': frequency_1[0:626], 'Genotype' : [genotype]*626}
-                average_df.append(pd.DataFrame(data=dict_data))
+                average_data = pd.DataFrame(data=dict_data)
+                average_df.append(average_data)
                 os.chdir(save_path)
-                average_df.to_csv(str(animal) + '_' +'channel_average_mean_' + save_file_as)
+                average_data.to_csv(str(animal) + '_' +'channel_average_mean_' + save_file_as)
             elif len(mean_psd_1) > 0:
                 if animal in GRIN_het_IDs:
                         genotype = 'GRIN2B'
@@ -74,9 +75,10 @@ for animal in br_animal_IDs:
                         genotype = 'WT'
                 dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': mean_psd_1[0:626], 
                         'Frequency': frequency_1[0:626], 'Genotype' : [genotype]*626}
-                average_df.append(pd.DataFrame(data=dict_data))
+                average_data = pd.DataFrame(data=dict_data)
+                average_df.append(average_data)
                 os.chdir(save_path)
-                average_df.to_csv(str(animal) + '_' +'channel' + '_mean_1' + save_file_as)
+                average_data.to_csv(str(animal) + '_' +'channel' + '_mean_1' + save_file_as)
             elif len(mean_psd_2) > 0: 
                 if animal in GRIN_het_IDs:
                         genotype = 'GRIN2B'
@@ -84,9 +86,10 @@ for animal in br_animal_IDs:
                         genotype = 'WT'
                 dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': mean_psd_2[0:626], 
                         'Frequency': frequency_1[0:626], 'Genotype' : [genotype]*626}
-                average_df.append(pd.DataFrame(data=dict_data))
+                average_data = pd.DataFrame(data=dict_data)
+                average_df.append(average_data)
                 os.chdir(save_path)
-                average_df.to_csv(str(animal) + '_' +'channel' + '_mean_2' + save_file_as)
+                average_data.to_csv(str(animal) + '_' +'channel' + '_mean_2' + save_file_as)
             else:
                 pass 
 
@@ -132,16 +135,16 @@ for animal in br_animal_IDs:
             if len(mean_psd_1) > 0 and len(mean_psd_2) > 0 :
                 results = pd.DataFrame(data = {'Power_1': mean_psd_1, 'Power_2': mean_psd_2})
                 average_psd = results[['Power_1', 'Power_2']].mean(axis = 1)
-                average_df.to_csv(str(animal) + '_' +'channel_average_mean_' + save_file_as)
                 if animal in GRIN_het_IDs:
                         genotype = 'GRIN2B'
                 else:
                         genotype = 'WT'
                 dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': average_psd[0:626], 
                         'Frequency': frequency_1[0:626], 'Genotype' : [genotype]*626}
-                average_df.append(pd.DataFrame(data=dict_data))
+                average_data = pd.DataFrame(data=dict_data)
+                average_df.append(average_data)
                 os.chdir(save_path)
-                average_df.to_csv(str(animal) + '_' +'channel_average_' + save_file_as)
+                average_data.to_csv(str(animal) + '_' +'channel_average_' + save_file_as)
             elif len(mean_psd_1) > 0:
                 if animal in GRIN_het_IDs:
                         genotype = 'GRIN2B'
@@ -149,9 +152,10 @@ for animal in br_animal_IDs:
                         genotype = 'WT'
                 dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': mean_psd_1[0:626], 
                         'Frequency': frequency_1[0:626], 'Genotype' : [genotype]*626}
-                average_df.append(pd.DataFrame(data=dict_data))
+                average_data = pd.DataFrame(data=dict_data)
+                average_df.append(average_data)
                 os.chdir(save_path)
-                average_df.to_csv(str(animal) + '_' +'channel_mean_1_' + save_file_as)
+                average_data.to_csv(str(animal) + '_' +'channel_mean_1_' + save_file_as)
             elif len(mean_psd_2) > 0: 
                 if animal in GRIN_het_IDs:
                         genotype = 'GRIN2B'
@@ -159,8 +163,10 @@ for animal in br_animal_IDs:
                         genotype = 'WT'
                 dict_data = {'Animal_ID': [animal]*626, 'Channel': [channelnumber]*626, 'Power': mean_psd_2[0:626], 
                         'Frequency': frequency_1[0:626], 'Genotype' : [genotype]*626}
-                average_df.append(pd.DataFrame(data=dict_data))
-                average_df.to_csv(str(animal) + '_' +'channel_mean_2_' + save_file_as)
+                average_data = pd.DataFrame(data=dict_data)
+                average_df.append(average_data)
+                os.chdir(save_path)
+                average_data.to_csv(str(animal) + '_' +'channel_mean_2_' + save_file_as)
             else:
                 pass 
 
