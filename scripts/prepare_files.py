@@ -9,20 +9,6 @@ sys.path.insert(0, '/home/melissa/PROJECT_DIRECTORIES/taini_main/scripts/Preproc
 from preproc1_preparefiles import PrepareFiles, LoadFromStart
 import matplotlib.pyplot as plt
 
-sample_rate = 250.4
-
-
-def br_seizure_files(br_file, sample_rate):
-    '''function to reformat seizure brain states'''
-    seizure_times_start = br_file.iloc[:, 0:1].to_numpy().astype(int)
-    seizure_times_end = br_file.iloc[:, 1:2].to_numpy().astype(int)
-    seizure_times_start_epochs = [epoch for sublist in seizure_times_start for epoch in sublist]
-    seizure_times_end_epochs = [epoch for sublist in seizure_times_end for epoch in sublist]
-    seizure_start_sample_rate = [int(element*sample_rate) for element in seizure_times_start_epochs]
-    seizure_end_sample_rate = [int(element*sample_rate) for element in seizure_times_end_epochs]
-    zipped_timevalues = list(zip(seizure_start_sample_rate , seizure_end_sample_rate)) 
-    
-    return zipped_timevalues  
 
 
 class PrepareGRIN2B(PrepareFiles):
@@ -61,21 +47,57 @@ class LoadGRIN2B(LoadFromStart):
 
 class GRIN2B_Seizures():
     
-    def __init__(self, timevalues_array, br_file, epoch_length):
-        self.timevalues_array = timevalues_array
+    sample_rate = 250.4
+
+    def __init__(self, br_file, epoch_length):
         self.br_file = br_file
         self.epoch_length = epoch_length
-        
-    def one_second_timebins(self, epoch_length):
 
-        function_timebins = lambda epoch_start, epoch_end: list(range(epoch_start, epoch_end, epoch_length))
+    def br_seizure_files(self):
+        '''function to reformat seizure brain states'''
+        seizure_times_start = self.br_file.iloc[:, 0:1].to_numpy().astype(int)
+        seizure_times_end = self.br_file.iloc[:, 1:2].to_numpy().astype(int)
+        seizure_times_start_epochs = [epoch for sublist in seizure_times_start for epoch in sublist]
+        seizure_times_end_epochs = [epoch for sublist in seizure_times_end for epoch in sublist]
+        seizure_start_sample_rate = [int(element*self.sample_rate) for element in seizure_times_start_epochs]
+        seizure_end_sample_rate = [int(element*self.sample_rate) for element in seizure_times_end_epochs]
+        zipped_timevalues = list(zip(seizure_start_sample_rate , seizure_end_sample_rate)) 
     
-        new_epoch_times = [list(map(lambda epoch: function_timebins(int(epoch[0]), int(epoch[1])), (self.timevalues_array)))]
+        return zipped_timevalues  
+        
+    def one_second_timebins(self, timevalues_array):
+
+        function_timebins = lambda epoch_start, epoch_end: list(range(epoch_start, epoch_end, self.epoch_length))
+    
+        new_epoch_times = [list(map(lambda epoch: function_timebins(int(epoch[0]), int(epoch[1])), (timevalues_array)))]
 
         new_time_array = [time_start for epoch in new_epoch_times for time_start in epoch]
         one_second_timebins = [time_start for epoch in new_time_array for time_start in epoch]
         return one_second_timebins
+
     
+    def preceding_following_epochs(zipped_timevalues):
+        
+        preceding_ictal_list = []
+        post_ictal_list = []
+    
+        for epoch in zipped_timevalues:
+            epoch_preceding = -250
+            epoch_following = 250
+            start_preceding = epoch[0]
+            end_preceding = start_preceding - epoch_following*10
+            start_post = epoch[1]
+            end_post = int(start_post + epoch_following*10)
+            preceding_epochs = np.arange(start_preceding, end_preceding, epoch_preceding)
+            preceding_ictal_list.append(preceding_epochs)
+            post_epochs = np.arange(start_post, end_post, epoch_following)
+            post_ictal_list.append(post_epochs)
+    
+        preceding_ictal_epochs = np.concatenate([epoch for epoch in preceding_ictal_list])
+        post_ictal_epochs = np.concatenate([epoch for epoch in post_ictal_list])
+    
+        return preceding_ictal_epochs, post_ictal_epochs
+
     
     def removing_seizure_epochs(self, wake_indices):
     
@@ -87,8 +109,7 @@ class GRIN2B_Seizures():
         testing_multiples = [round_to_multiple(i, 5) for i in seizure_times_start_epochs] 
         sample_rate_indices = [int(epoch*250.4) for epoch in testing_multiples]
     
-        preceding_ictal_epochs = []
-        following_ictal_epochs = []
+        
         all_ictal_epochs = []
         
         for seizure_epoch in sample_rate_indices:
@@ -96,50 +117,47 @@ class GRIN2B_Seizures():
                 epoch_bins = 1252    
                 preceding_epochs = [seizure_epoch - epoch_bins*5, seizure_epoch - epoch_bins*4, seizure_epoch - epoch_bins*3, seizure_epoch - epoch_bins*2, seizure_epoch - epoch_bins]
                 following_epochs = [seizure_epoch + epoch_bins, seizure_epoch + epoch_bins*2, seizure_epoch + epoch_bins*3, seizure_epoch + epoch_bins*4, seizure_epoch + epoch_bins*5 ]
-                preceding_ictal_epochs.append(preceding_epochs)
-                following_ictal_epochs.append(following_epochs)
                 all_ictal_epochs.extend(preceding_epochs + [seizure_epoch] + following_epochs)
             
-        return preceding_ictal_epochs, following_ictal_epochs, all_ictal_epochs
+        return all_ictal_epochs
     
     
-    def clean_indices(self, all_ictal_epochs):
+    def clean_indices(self, timevalues_array, all_ictal_epochs):
         new_indices = []
-        for epoch in self.timevalues_array:
+        for epoch in timevalues_array:
             if epoch not in all_ictal_epochs:
                 new_indices.append(epoch)
 
         return new_indices
 
-    
-
-    def thresholding_algo(self, y, lag, threshold, influence):
-        signals = np.zeros(len(y))
-        filteredY = np.array(y)
-        avgFilter = [0]*len(y)
-        stdFilter = [0]*len(y)
-        avgFilter[lag - 1] = np.mean(y[0:lag])
-        stdFilter[lag - 1] = np.std(y[0:lag])
-        for i in range(lag, len(y)):
-            if abs(y[i] - avgFilter[i-1]) > threshold * stdFilter [i-1]:
-                if y[i] > avgFilter[i-1]:
-                    signals[i] = 1
-                else:
-                    signals[i] = -1
-
-                filteredY[i] = influence * y[i] + (1 - influence) * filteredY[i-1]
-                avgFilter[i] = np.mean(filteredY[(i-lag+1):i+1])
-                stdFilter[i] = np.std(filteredY[(i-lag+1):i+1])
-            else:
-                signals[i] = 0
-                filteredY[i] = y[i]
-                avgFilter[i] = np.mean(filteredY[(i-lag+1):i+1])
-                stdFilter[i] = np.std(filteredY[(i-lag+1):i+1])
-
-        return np.asarray(signals),np.asarray(avgFilter),np.asarray(stdFilter)
-
 
     def harmonics_algo(self, filtered_data):
+        def thresholding_algo(self, y, lag, threshold, influence):
+            signals = np.zeros(len(y))
+            filteredY = np.array(y)
+            avgFilter = [0]*len(y)
+            stdFilter = [0]*len(y)
+            avgFilter[lag - 1] = np.mean(y[0:lag])
+            stdFilter[lag - 1] = np.std(y[0:lag])
+            for i in range(lag, len(y)):
+                if abs(y[i] - avgFilter[i-1]) > threshold * stdFilter [i-1]:
+                    if y[i] > avgFilter[i-1]:
+                        signals[i] = 1
+                    else:
+                        signals[i] = -1
+
+                    filteredY[i] = influence * y[i] + (1 - influence) * filteredY[i-1]
+                    avgFilter[i] = np.mean(filteredY[(i-lag+1):i+1])
+                    stdFilter[i] = np.std(filteredY[(i-lag+1):i+1])
+                else:
+                    signals[i] = 0
+                    filteredY[i] = y[i]
+                    avgFilter[i] = np.mean(filteredY[(i-lag+1):i+1])
+                    stdFilter[i] = np.std(filteredY[(i-lag+1):i+1])
+
+            return np.asarray(signals),np.asarray(avgFilter),np.asarray(stdFilter)
+
+
         noisy_epochs = []
         clean_epochs_power = []
         for epoch_idx, epoch in enumerate(filtered_data):
