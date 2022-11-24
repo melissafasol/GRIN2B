@@ -131,8 +131,8 @@ class GRIN2B_Seizures():
         return new_indices
 
 
-    def harmonics_algo(self, filtered_data):
-        def thresholding_algo(self, y, lag, threshold, influence):
+    def harmonics_algo(self, filtered_data, save_directory, animal, channel):
+        def thresholding_algo( y, lag, threshold, influence):
             signals = np.zeros(len(y))
             filteredY = np.array(y)
             avgFilter = [0]*len(y)
@@ -169,7 +169,14 @@ class GRIN2B_Seizures():
                     noisy_epochs.append(epoch_idx)
                 else:
                     clean_epochs_power.append(power_calculations[1])
-        
+                    print('test plot') 
+                    plt.semilogy(frequency[0:626], power_calculations[1][0:626])
+                    plt.yscale('log')
+                    plt.xlim(0, 100)
+                    plt.ylim(10**-5, 10**5)
+                    os.chdir(save_directory)
+                    plt.savefig('epoch_number' + str(epoch_idx) + '_' + str(animal) + '_' + str(channel) + 'wake_testing_thresholds.jpg')
+                    plt.clf()
                 
         noisy_indices = [*set(noisy_epochs)]
     
