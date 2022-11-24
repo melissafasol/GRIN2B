@@ -1,3 +1,4 @@
+import os
 import sys 
 from scipy import stats
 from scipy import signal
@@ -158,25 +159,43 @@ class GRIN2B_Seizures():
             return np.asarray(signals),np.asarray(avgFilter),np.asarray(stdFilter)
 
 
+        noisy_epochs_df = []
         noisy_epochs = []
         clean_epochs_power = []
         for epoch_idx, epoch in enumerate(filtered_data):
             power_calculations = signal.welch(epoch, window = 'hann', fs = 250.4, nperseg = 1252)
             frequency = power_calculations[0]
-            signals, avgfilter, stdfilter = thresholding_algo(y = power_calculations[1], lag = 30, threshold = 5, influence = 0)
-            for first_harmonic,second_harmonic in zip(signals[25:50], signals[75:100]):
-                if first_harmonic.mean() > 0 or second_harmonic.mean() > 0 :
-                    noisy_epochs.append(epoch_idx)
-                else:
-                    clean_epochs_power.append(power_calculations[1])
-                    print('test plot') 
-                    plt.semilogy(frequency[0:626], power_calculations[1][0:626])
-                    plt.yscale('log')
-                    plt.xlim(0, 100)
-                    plt.ylim(10**-5, 10**5)
-                    os.chdir(save_directory)
-                    plt.savefig('epoch_number' + str(epoch_idx) + '_' + str(animal) + '_' + str(channel) + 'wake_testing_thresholds.jpg')
-                    plt.clf()
+            slope, intercept = np.polyfit(frequency[0:626], power_calculations[1][0:626], 1)
+            signals, avgfilter, stdfilter = thresholding_algo(y = power_calculations[1], lag = 30, threshold = 5, influence = 0) 
+            i = np.mean(signals[25:50])
+            j = np.mean(signals[60:85])
+            if intercept > 500 or slope < -5:
+                print('noise artifacts')
+                noisy_df = pd.DataFrame({'epoch_idx': [epoch_idx], 'Animal_ID': [animal], 'channel': [channel]})
+                noisy_epochs.append(epoch_idx)
+                noisy_epochs_df.append(noisy_df)
+            elif i and j > 1:
+                noisy_df = pd.DataFrame({'epoch_idx': [epoch_idx], 'Animal_ID': [animal], 'channel': [channel]})
+                noisy_epochs_df.append(noisy_df)
+                noisy_epochs.append(epoch_idx)
+                print('seizure artifacts') 
+                plt.semilogy(frequency[0:626], power_calculations[1][0:626])
+                plt.yscale('log')
+                plt.xlim(0, 100)
+                plt.ylim(10**-5, 10**5)
+                os.chdir(save_directory)
+                plt.savefig('epoch_number' + str(epoch_idx) + '_' + str(animal) + '_' + str(channel) + 'discarded_epoch.jpg')
+                plt.clf()
+            else:            
+                clean_epochs_power.append(power_calculations[1])
+                print('clean plot') 
+                plt.semilogy(frequency[0:626], power_calculations[1][0:626])
+                plt.yscale('log')
+                plt.xlim(0, 100)
+                plt.ylim(10**-5, 10**5)
+                os.chdir(save_directory)
+                plt.savefig('epoch_number' + str(epoch_idx) + '_' + str(animal) + '_' + str(channel) + 'included_epoch.jpg')
+                plt.clf()
                 
         noisy_indices = [*set(noisy_epochs)]
     
@@ -187,4 +206,4 @@ class GRIN2B_Seizures():
         mean_values = df_psd.mean(axis = 0)
         mean_psd = mean_values.to_numpy()
                 
-        return noisy_indices, mean_psd, frequency
+        return noisy_epochs_df, mean_psd, frequency
