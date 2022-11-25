@@ -34,7 +34,7 @@ class PowerSpectrum:
                     noisy_epochs.append(power_calculations[1])
                 else:
                     threshold_power.append(power_calculations[1])
-                    #plot_per_epoch = power_calculations[1]
+                    plot_per_epoch = power_calculations[1]
                     #print('test plot') 
                     #plt.semilogy(frequency[0:626], plot_per_epoch[0:626])
                     #plt.yscale('log')
