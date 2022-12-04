@@ -77,27 +77,26 @@ class GRIN2B_Seizures():
         return one_second_timebins
 
     
-    def preceding_following_epochs(zipped_timevalues):
+    def preceding_following_epochs(self, zipped_timevalues):
         
         preceding_ictal_list = []
         post_ictal_list = []
     
         for epoch in zipped_timevalues:
-            epoch_preceding = -250
-            epoch_following = 250
+            one_time_bin = 250
             start_preceding = epoch[0]
-            end_preceding = start_preceding - epoch_following*10
+            end_preceding = start_preceding - one_time_bin*10
             start_post = epoch[1]
-            end_post = int(start_post + epoch_following*10)
-            preceding_epochs = np.arange(start_preceding, end_preceding, epoch_preceding)
+            end_post = int(start_post + one_time_bin*10)
+            preceding_epochs = np.arange(end_preceding, start_preceding - one_time_bin, one_time_bin)
             preceding_ictal_list.append(preceding_epochs)
-            post_epochs = np.arange(start_post, end_post, epoch_following)
+            post_epochs = np.arange(start_post + one_time_bin, end_post, one_time_bin)
             post_ictal_list.append(post_epochs)
     
-        preceding_ictal_epochs = np.concatenate([epoch for epoch in preceding_ictal_list])
-        post_ictal_epochs = np.concatenate([epoch for epoch in post_ictal_list])
-    
-        return preceding_ictal_epochs, post_ictal_epochs
+        #preceding_ictal_epochs = np.concatenate([epoch for epoch in preceding_ictal_list])
+        #post_ictal_epochs = np.concatenate([epoch for epoch in post_ictal_list])
+
+        return preceding_ictal_list, post_ictal_list
 
     
     def removing_seizure_epochs(self, wake_indices):
