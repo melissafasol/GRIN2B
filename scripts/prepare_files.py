@@ -85,9 +85,9 @@ class GRIN2B_Seizures():
         for epoch in zipped_timevalues:
             one_time_bin = 250
             start_preceding = epoch[0]
-            end_preceding = start_preceding - one_time_bin*10
+            end_preceding = start_preceding - one_time_bin*60
             start_post = epoch[1]
-            end_post = int(start_post + one_time_bin*10)
+            end_post = int(start_post + one_time_bin*60)
             preceding_epochs = np.arange(end_preceding, start_preceding - one_time_bin, one_time_bin)
             preceding_ictal_list.append(preceding_epochs)
             post_epochs = np.arange(start_post + one_time_bin, end_post, one_time_bin)
