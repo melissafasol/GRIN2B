@@ -76,15 +76,21 @@ class Filter:
             eeg_values = filtered_data[start_time_bin: end_time_bin]
             for data_point in eeg_values:
                 if data_point >= self.noise_limit:
-                    noisy_dict = {str(idx_value): eeg_values}
-                    noisy_epochs.append(noisy_dict)
+                    noisy_epochs.append(idx_value)
                     break
-                else:
-                    idx_tracker = {str(idx_value): [filtered_data[start_time_bin: end_time_bin]]}
-                    clean_epochs.append(idx_tracker)
 
-        return noisy_epochs, clean_epochs
+        for idx_value, timevalue in zip(df_index['Time_Idx'], df_index['Time_Value']):
+            if idx_value not in noisy_epochs:
+                start_time_bin = timevalue 
+                end_time_bin = timevalue + epoch_bins
+                eeg_values = filtered_data[start_time_bin: end_time_bin]
+                clean_epochs.append({str(idx_value): eeg_values})
 
+        
+        clean_concat = {key:val for d in clean_epochs for key,val in d.items()}
+        
+        return clean_concat
+    
     def butter_bandpass_all_channels_coherence(self, seizure):
         '''function to filter all 14 eeg channels to save for coherence calculations'''
         butter_b, butter_a = signal.butter(self.order, [self.low, self.high], btype='band', analog = False)
