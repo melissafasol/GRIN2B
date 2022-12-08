@@ -78,11 +78,12 @@ class Filter:
                 if data_point >= self.noise_limit:
                     noisy_dict = {str(idx_value): eeg_values}
                     noisy_epochs.append(noisy_dict)
-                    continue
+                    break
                 else:
                     idx_tracker = {str(idx_value): [filtered_data[start_time_bin: end_time_bin]]}
                     clean_epochs.append(idx_tracker)
-        
+
+        return noisy_epochs, clean_epochs
 
     def butter_bandpass_all_channels_coherence(self, seizure):
         '''function to filter all 14 eeg channels to save for coherence calculations'''
