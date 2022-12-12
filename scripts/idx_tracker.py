@@ -150,43 +150,42 @@ class IDX_tracker(Filter):
         return noisy_epochs_df, mean_psd, frequency
     
     
-    class HarmonicsPreFiltered():
+class HarmonicsPreFiltered():
         
-        def __init__(self, filtered_data):
-            self.filtered_data = filtered_data
+    def __init__(self, filtered_data, brainstate):
+        self.filtered_data = filtered_data
+        self.brainstate = brainstate
             
             
-        def harmonics_algo_idx(self, animal, channel):
+    def harmonics_algo_idx(self, animal, channel):
             
-            def thresholding_algo(y, lag, threshold, influence):
-                signals = np.zeros(len(y))
-                filteredY = np.array(y)
-                avgFilter = [0]*len(y)
-                stdFilter = [0]*len(y)
-                avgFilter[lag - 1] = np.mean(y[0:lag])
-                stdFilter[lag - 1] = np.std(y[0:lag])
-                for i in range(lag, len(y)):
-                    if abs(y[i] - avgFilter[i-1]) > threshold * stdFilter [i-1]:
-                        if y[i] > avgFilter[i-1]:
-                            signals[i] = 1
-                        else:
-                            signals[i] = -1
-
-                        filteredY[i] = influence * y[i] + (1 - influence) * filteredY[i-1]
-                        avgFilter[i] = np.mean(filteredY[(i-lag+1):i+1])
-                        stdFilter[i] = np.std(filteredY[(i-lag+1):i+1])
+        def thresholding_algo(y, lag, threshold, influence):
+            signals = np.zeros(len(y))
+            filteredY = np.array(y)
+            avgFilter = [0]*len(y)
+            stdFilter = [0]*len(y)
+            avgFilter[lag - 1] = np.mean(y[0:lag])
+            stdFilter[lag - 1] = np.std(y[0:lag])
+            for i in range(lag, len(y)):
+                if abs(y[i] - avgFilter[i-1]) > threshold * stdFilter [i-1]:
+                    if y[i] > avgFilter[i-1]:
+                        signals[i] = 1
                     else:
-                        signals[i] = 0
-                        filteredY[i] = y[i]
-                        avgFilter[i] = np.mean(filteredY[(i-lag+1):i+1])
-                        stdFilter[i] = np.std(filteredY[(i-lag+1):i+1])
+                        signals[i] = -1
+                    filteredY[i] = influence * y[i] + (1 - influence) * filteredY[i-1]
+                    avgFilter[i] = np.mean(filteredY[(i-lag+1):i+1])
+                    stdFilter[i] = np.std(filteredY[(i-lag+1):i+1])
+                else:
+                    signals[i] = 0
+                    filteredY[i] = y[i]
+                    avgFilter[i] = np.mean(filteredY[(i-lag+1):i+1])
+                    stdFilter[i] = np.std(filteredY[(i-lag+1):i+1])
+            return np.asarray(signals),np.asarray(avgFilter),np.asarray(stdFilter)
 
-                return np.asarray(signals),np.asarray(avgFilter),np.asarray(stdFilter)
-
-
-            noisy_epochs_df = []
-            noisy_epochs = []
-            clean_epochs_power = []
+        noisy_epochs_df = []
+        noisy_epochs = []
+        clean_epochs_power = []
+        if self.brainstate == 0:
             for key, epoch in self.filtered_data.items():
                 power_calculations = signal.welch(epoch, window = 'hann', fs = 250.4, nperseg = 1252)
                 frequency = power_calculations[0]
@@ -207,14 +206,27 @@ class IDX_tracker(Filter):
                 else: 
                     clean_epochs_power.append(power_calculations[1])
                 
+        else:
+            for key, epoch in self.filtered_data.items():
+                power_calculations = signal.welch(epoch, window = 'hann', fs = 250.4, nperseg = 1252)
+                frequency = power_calculations[0]
+                slope, intercept = np.polyfit(frequency[0:626], power_calculations[1][0:626], 1)
+                if intercept > 500 or slope < -5:
+                    print('noisy_epochs')
+                    noisy_df = pd.DataFrame({'epoch_idx': [key], 'Animal_ID': [animal], 'channel': [channel], 'artifact': ['noise']})
+                    noisy_epochs.append(key)
+                    noisy_epochs_df.append(noisy_df)
+                else: 
+                    clean_epochs_power.append(power_calculations[1])
                 
-            noisy_indices = [*set(noisy_epochs)]
+                
+        noisy_indices = [*set(noisy_epochs)]
     
-            for epoch in sorted(noisy_indices, reverse=True):
-                del self.filtered_data[epoch]
+        for epoch in sorted(noisy_indices, reverse=True):
+            del self.filtered_data[epoch]
         
-            df_psd = pd.DataFrame(clean_epochs_power)
-            mean_values = df_psd.mean(axis = 0)
-            mean_psd = mean_values.to_numpy()
-                
-            return noisy_epochs_df, mean_psd, frequency
+        df_psd = pd.DataFrame(clean_epochs_power)
+        mean_values = df_psd.mean(axis = 0)
+        mean_psd = mean_values.to_numpy()
+            
+        return noisy_epochs_df, mean_psd, frequency
