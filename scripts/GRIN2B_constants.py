@@ -129,3 +129,15 @@ channel_dict = {'right_hem': [0, 2, 3, 4, 5, 6, 7],
 channels_colors_dict= {0 : 'teal', 2 :'orangered', 3 : 'orangered', 4: 'orangered', 5: 'darkred',
               6 : 'darkred', 7 : 'teal', 8: 'darkred', 9:'darkred', 10: 'teal',
               11: 'orangered', 12: 'orangered', 13: 'orangered', 15 : 'teal'}
+
+
+def brainstate_number_name(brainstate):
+    
+    if brainstate == 0:
+        brainstate_name = 'wake'
+    if brainstate == 1:
+        brainstate_name = 'nrem'
+    if brainstate == 2:
+        brainstate_name = 'rem'
+        
+    return brainstate_name

@@ -55,41 +55,6 @@ class Filter:
         channels_without_noise = [i for j, i in enumerate(self.extracted_datavalues) if j not in remove_duplicates]
         return channels_without_noise 
     
-    def butter_bandpass_index_tracker(self, seizure, df_index):
-        '''function to keep track of original brain state indices to plot corresponding raw data indices'''
-        #timevalues array should be a dataframe with one column of indices and one column of 
-        noisy_epochs = []
-        clean_epochs = []
-        
-        if seizure == 'True':
-            epoch_bins = int(250.4)
-        else:
-            epoch_bins = 1252
-
-        butter_b, butter_a = signal.butter(self.order, [self.low, self.high], btype='band', analog = False)
-        
-        filtered_data = signal.filtfilt(butter_b, butter_a, self.unfiltered_data)
-
-        for idx_value, timevalue in zip(df_index['Time_Idx'], df_index['Time_Value']):
-            start_time_bin = timevalue
-            end_time_bin = timevalue + epoch_bins
-            eeg_values = filtered_data[start_time_bin: end_time_bin]
-            for data_point in eeg_values:
-                if data_point >= self.noise_limit:
-                    noisy_epochs.append(idx_value)
-                    break
-
-        for idx_value, timevalue in zip(df_index['Time_Idx'], df_index['Time_Value']):
-            if idx_value not in noisy_epochs:
-                start_time_bin = timevalue 
-                end_time_bin = timevalue + epoch_bins
-                eeg_values = filtered_data[start_time_bin: end_time_bin]
-                clean_epochs.append({str(idx_value): eeg_values})
-
-        
-        clean_concat = {key:val for d in clean_epochs for key,val in d.items()}
-        
-        return clean_concat
     
     def butter_bandpass_all_channels_coherence(self, seizure):
         '''function to filter all 14 eeg channels to save for coherence calculations'''
