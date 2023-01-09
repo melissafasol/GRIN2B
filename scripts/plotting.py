@@ -82,7 +82,7 @@ class PlottingGRIN2B():
     
             sns.set_style("white") 
             fig, axs = plt.subplots(1,1, figsize=(20,15), sharex = True, sharey=True)
-            genotype_palette = ['orangered', 'teal']
+            genotype_palette = ['teal', 'black']
             hue_order = ['GRIN2B', 'WT']
             sns.lineplot(data=data, x='Frequency', y='Power', hue='Genotype', hue_order = hue_order, 
                      palette = genotype_palette, linewidth = 2)
