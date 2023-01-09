@@ -78,7 +78,7 @@ class PlottingGRIN2B():
             plt.clf()
         
 
-    def plot_genotype_average_by_channel(df_to_plot, channel, sleepstage, save_path):
+    def plot_genotype_average_by_channel(self, data, channel, sleepstage, save_path):
     
             sns.set_style("white") 
             fig, axs = plt.subplots(1,1, figsize=(20,15), sharex = True, sharey=True)
