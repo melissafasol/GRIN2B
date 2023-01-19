@@ -94,6 +94,7 @@ class PlottingGRIN2B():
             label_list = ['0', '6', '12', '18', '24', '30', '36', '42', '48']
             axs.set_xticks(ticks = tick_values, labels = label_list)
             
+            
             #include an overall plot title 
             plt.suptitle('Channel ' + str(channel) + ' ' + str(sleepstage), y = 0.92, fontsize = 30) 
             sns.despine()
@@ -124,6 +125,8 @@ class PlottingGRIN2B():
             plt.savefig('chan_' + str(channel) + '_' + str(sleepstage) + '.jpg')
             plt.savefig('chan_' + str(channel) + '_' + str(sleepstage) + '.svg')
 
+
+
     def genotype_sex_subplots(self, female_data, male_data, sleepstage, save_path) :
         sns.set_style("white") 
         fig, axs = plt.subplots(1,2, figsize=(20,10), sharex = True, sharey=True)
@@ -146,7 +149,7 @@ class PlottingGRIN2B():
         plt.setp(leg_texts, fontsize=20)
 
 
-        sns.lineplot(data = male_data, x='Frequency_2', y='Power', hue = 'Gender', errorbar = ('ci', 95),
+        sns.lineplot(data = male_data, x='Frequency_2', y='Power', hue = 'Gender', errorbar = ("se"),
                      hue_order = hue_order_2, linewidth = 2, palette = genotype_palette, ax = axs[1])
         tick_values = list(range(0, 54, 6))
         label_list = ['0', '6', '12', '18', '24', '30', '36', '42', '48']
