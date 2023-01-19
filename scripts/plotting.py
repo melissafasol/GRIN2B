@@ -110,6 +110,73 @@ class PlottingGRIN2B():
             plt.show()
             plt.clf()
 
+    def genotype_sex_subplots(self, female_data, male_data, sleepstage, save_path) :
+        sns.set_style("white") 
+        fig, axs = plt.subplots(1,2, figsize=(20,10), sharex = True, sharey=True)
+        genotype_palette = ['teal', 'black']
+        hue_order_1 = ['Female GRIN2B Het', 'Female Wildtype']
+        hue_order_2 = ['Male GRIN2B Het', 'Male Wildtype']
+
+
+        sns.lineplot(data= female_data, x='Frequency_2', y='Power',hue = 'Gender', errorbar = ("se"),
+                     hue_order = hue_order_1, linewidth = 2, palette = genotype_palette, ax = axs[0])
+        sns.despine()
+
+        #customise the legend for plot one 
+        leg = axs[0].legend( loc = 'upper right', frameon = False)
+        leg.set_title('Sex',prop={'size':25})
+        leg_lines = leg.get_lines()
+        leg_texts = leg.get_texts()
+        plt.setp(leg_lines[0], linewidth=6)
+        plt.setp(leg_lines[1], linewidth=6)
+        plt.setp(leg_texts, fontsize=20)
+
+
+        sns.lineplot(data = male_data, x='Frequency_2', y='Power', hue = 'Gender', errorbar = ('ci', 95),
+                     hue_order = hue_order_2, linewidth = 2, palette = genotype_palette, ax = axs[1])
+        tick_values = list(range(0, 54, 6))
+        label_list = ['0', '6', '12', '18', '24', '30', '36', '42', '48']
+        axs[1].set_xticks(ticks = tick_values, labels = label_list)
+        sns.despine()
+
+
+        #customise the legend for plot two 
+        leg = axs[1].legend( loc = 'upper right', frameon = False)
+        leg.set_title('Sex',prop={'size':25})
+        leg_lines = leg.get_lines()
+        leg_texts = leg.get_texts()
+        plt.setp(leg_lines[0], linewidth=6)
+        plt.setp(leg_lines[1], linewidth=6)
+        plt.setp(leg_texts, fontsize=20)
+
+        #specify axes details 
+        axs[0].set_yscale('log')
+        axs[1].set_yscale('log')
+        axs[0].set_xlim(1, 48)
+        axs[0].set_ylim(10**-1, 10**3)
+        axs[1].set_xlim(1, 48)
+        axs[1].set_ylim(10**-1, 10**3)
+        axs[0].set_xlabel("Frequency (Hz)", fontsize = 20)
+        axs[1].set_xlabel("Frequency (Hz)", fontsize = 20)
+        axs[0].set_ylabel("Power [V**2/Hz]", fontsize = 20)
+
+        #include an overall plot title 
+        fig.suptitle('Overall Average ' + str(sleepstage), y = 0.96, fontsize = 30) 
+
+
+        #increase width of the x and y axis 
+        for axis in ['bottom','left']:
+            axs[0].spines[axis].set_linewidth(2)
+            axs[1].spines[axis].set_linewidth(2)
+
+        #update the fontsize of all characters on x and y axis
+        plt.rcParams.update({'font.size': 20})
+
+        #save figure 
+        os.chdir(save_path)
+        plt.savefig('overall_average_' + str(sleepstage) + '_sex_subplots.jpg')
+        plt.savefig('overall_average_' + str(sleepstage) + '_sex_subplots.svg')
+
     
     def bar_and_strip_plots(self, delta, theta, sigma, beta, gamma, sleepstage, save_directory):
         f, ax = plt.subplots(1,5, figsize=(10,10), sharey = True)
