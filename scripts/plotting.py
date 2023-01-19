@@ -81,34 +81,48 @@ class PlottingGRIN2B():
             plt.clf()
         
 
-    def plot_genotype_average_by_channel(self, data, channel, region, sleepstage, save_path):
+    def plot_genotype_average_by_channel(self, data_to_plot, channel, sleepstage, save_directory):
     
             sns.set_style("white") 
             fig, axs = plt.subplots(1,1, figsize=(20,15), sharex = True, sharey=True)
             genotype_palette = ['teal', 'black']
             hue_order = ['GRIN2B', 'WT']
-            sns.lineplot(data=data, x='Frequency', y='Power', hue='Genotype', hue_order = hue_order, 
-                     palette = genotype_palette, linewidth = 2)
-            plt.suptitle(str(sleepstage) + ' Average ' + str(region) + ' (Channel ' + str(channel) + ')', fontsize = 35, fontweight = 'bold') 
+            sns.lineplot(data= data_to_plot, x='Frequency_2', y='Power',hue = 'Genotype', errorbar = ("se"),
+            hue_order = hue_order, linewidth = 2, palette = genotype_palette)
+            axs.set_yscale('log')
+            tick_values = list(range(0, 54, 6))
+            label_list = ['0', '6', '12', '18', '24', '30', '36', '42', '48']
+            axs.set_xticks(ticks = tick_values, labels = label_list)
+            
+            #include an overall plot title 
+            plt.suptitle('Channel ' + str(channel) + ' ' + str(sleepstage), y = 0.92, fontsize = 30) 
             sns.despine()
-            plt.yscale('log')
-            axs.set_xlim(PlottingGRIN2B.lower_x_lim, PlottingGRIN2B.upper_x_lim)
-            axs.set(xlabel = PlottingGRIN2B.x_ax_label)
-            axs.set_ylim(PlottingGRIN2B.lower_y_lim, PlottingGRIN2B.upper_y_lim)
-            axs.set(ylabel = PlottingGRIN2B.y_ax_label)
+            sns.despine()
+            axs.set_xlim(1, 49)
+            axs.set_ylim(10**-1, 10**3)
+            axs.set_xlabel("Frequency (Hz)", fontsize = 20)
+            axs.set_ylabel("Power [V**2/Hz]", fontsize = 20)
+
+            #customise the legend
             leg = plt.legend( loc = 'upper right', frameon = False)
+            leg.set_title('Genotype',prop={'size':25})
             leg_lines = leg.get_lines()
             leg_texts = leg.get_texts()
             plt.setp(leg_lines[0], linewidth=6)
-            plt.setp(leg_texts, fontsize=30)
-            plt.rc('legend',fontsize=30)
+            plt.setp(leg_lines[1], linewidth=6)
+            plt.setp(leg_texts, fontsize=20)
+
+            #increase width of the x and y axis 
             for axis in ['bottom','left']:
-                axs.spines[axis].set_linewidth(4)
+                axs.spines[axis].set_linewidth(2)
+
+            #update the fontsize of all characters on x and y axis
             plt.rcParams.update({'font.size': 20})
-            os.chdir(save_path)
-            plt.savefig(str(channel) + '_' + str(sleepstage) + '.jpg')
-            plt.show()
-            plt.clf()
+
+            #save figure 
+            os.chdir(save_directory)
+            plt.savefig('chan_' + str(channel) + '_' + str(sleepstage) + '.jpg')
+            plt.savefig('chan_' + str(channel) + '_' + str(sleepstage) + '.svg')
 
     def genotype_sex_subplots(self, female_data, male_data, sleepstage, save_path) :
         sns.set_style("white") 
