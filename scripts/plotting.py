@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
 from GRIN2B_constants import channel_dict
 
@@ -14,7 +15,7 @@ class PlottingGRIN2B():
     x_ax_label = 'Frequency (Hz)'
     lower_y_lim = 10**-3
     upper_y_lim = 10**3
-    y_ax_label = 'PSD [V**2/Hz]'
+    y_ax_label = 'Power [V**2/Hz]'
     
     def __init__(self):
         pass
@@ -88,7 +89,7 @@ class PlottingGRIN2B():
             hue_order = ['GRIN2B', 'WT']
             sns.lineplot(data=data, x='Frequency', y='Power', hue='Genotype', hue_order = hue_order, 
                      palette = genotype_palette, linewidth = 2)
-            plt.suptitle(str(sleepstage) + ' Average ' + str(region) + ' (Channel ' + str(channel) + ')', fontsize = 30, fontweight = 'bold') 
+            plt.suptitle(str(sleepstage) + ' Average ' + str(region) + ' (Channel ' + str(channel) + ')', fontsize = 35, fontweight = 'bold') 
             sns.despine()
             plt.yscale('log')
             axs.set_xlim(PlottingGRIN2B.lower_x_lim, PlottingGRIN2B.upper_x_lim)
@@ -99,12 +100,106 @@ class PlottingGRIN2B():
             leg_lines = leg.get_lines()
             leg_texts = leg.get_texts()
             plt.setp(leg_lines[0], linewidth=6)
-            plt.setp(leg_texts, fontsize=10)
-            plt.rc('legend',fontsize=20)
+            plt.setp(leg_texts, fontsize=30)
+            plt.rc('legend',fontsize=30)
             for axis in ['bottom','left']:
-                axs.spines[axis].set_linewidth(2)
+                axs.spines[axis].set_linewidth(4)
             plt.rcParams.update({'font.size': 20})
             os.chdir(save_path)
             plt.savefig(str(channel) + '_' + str(sleepstage) + '.jpg')
             plt.show()
             plt.clf()
+
+    
+    def bar_and_strip_plots(self, delta, theta, sigma, beta, gamma, sleepstage, save_directory):
+        f, ax = plt.subplots(1,5, figsize=(10,10), sharey = True)
+        sns.set_style("white")
+        hue_order_palette = ['WT', 'GRIN2B']
+        palette_stats = ['black', 'teal']
+        pointplot_palette = ['white', 'white']
+        sns.barplot(x= 'Frequency', y='Power', hue='Genotype',errorbar = ("se"), data = delta, width = 1.0,
+                    hue_order = hue_order_palette, palette = palette_stats, ax = ax[0])
+        sns.stripplot(x = 'Frequency', y = 'Power', hue = 'Genotype', data = delta, hue_order = hue_order_palette,
+                      palette = pointplot_palette, edgecolor = 'k', sizes = (50, 50), dodge = True, linewidth = 1, ax = ax[0])
+        ax[0].legend([],[], frameon=False)
+        ax[0].set_yscale('log')
+        ax[0].set(xlabel=None)
+        ax[0].set(xticklabels=['Delta'])
+        ax[0].set(ylabel = 'Power [V**2/Hz]')
+        sns.barplot(x= 'Frequency', y='Power', hue='Genotype', errorbar = ("se"), data = theta, width = 1.0,
+                    hue_order = hue_order_palette, palette = palette_stats, ax = ax[1])
+        sns.stripplot(x = 'Frequency', y = 'Power', hue = 'Genotype', data = theta, hue_order = hue_order_palette,
+                      palette = pointplot_palette, edgecolor = 'k', sizes = (50, 50), dodge = True, linewidth = 1, ax = ax[1])
+        ax[1].legend([],[], frameon=False)
+        ax[1].set_yscale('log')
+        ax[1].set(xlabel=None)
+        ax[1].set(xticklabels=['Theta'])
+        ax[1].set(ylabel=None)
+        sns.barplot(x= 'Frequency', y='Power', hue='Genotype', errorbar = ("se"), data = sigma, width = 1.0,
+                    hue_order = hue_order_palette, palette = palette_stats, ax = ax[2])
+        sns.stripplot(x = 'Frequency', y = 'Power', hue = 'Genotype', data = sigma, hue_order = hue_order_palette,
+                      palette = pointplot_palette, edgecolor = 'k', sizes = (50, 50), dodge = True, linewidth = 1, ax = ax[2])
+        ax[2].legend([],[], frameon=False)
+        ax[2].set_yscale('log')
+        ax[2].set(ylabel=None)
+        ax[2].set(xlabel= 'Channel 2')
+        ax[2].set(xticklabels=['Sigma'])
+        sns.barplot(x= 'Frequency', y='Power', hue='Genotype', errorbar = ("se"), data = beta, width = 1.0,
+                    hue_order = hue_order_palette, palette = palette_stats, ax = ax[3])
+        sns.stripplot(x = 'Frequency', y = 'Power', hue = 'Genotype', data = beta, hue_order = hue_order_palette,
+                      palette = pointplot_palette, edgecolor = 'k', sizes = (50, 50), dodge = True, linewidth = 1, ax = ax[3])
+        ax[3].legend([],[], frameon=False)
+        ax[3].set_yscale('log')
+        ax[3].set(xlabel=None)
+        ax[3].set(xticklabels=['Beta'])
+        ax[3].set(ylabel=None)
+        sns.barplot(x= 'Frequency', y='Power', hue='Genotype', errorbar = ("se"), data = gamma, width = 1.0,
+                            hue_order = hue_order_palette, palette = palette_stats, ax = ax[4])
+        sns.stripplot(x = 'Frequency', y = 'Power', hue = 'Genotype', data = gamma, hue_order = hue_order_palette,
+                      palette = pointplot_palette, edgecolor = 'k', sizes = (50, 50), dodge = True, linewidth = 1, ax = ax[4])
+        ax[4].legend([], [], frameon = False)
+        ax[4].set_yscale('log')
+        ax[4].set(xlabel=None)
+        ax[4].set(xticklabels=['Gamma'])
+        ax[4].set(ylabel=None)
+
+
+        #sns.despine()
+        plt.yscale('log')
+        plt.ylim(10**-1, 10**3)
+        plt.suptitle('Channel 2 ' + str(sleepstage), fontsize = 30, fontweight = 'bold')
+
+        ax[0].spines['top'].set_visible(False)
+        ax[0].spines['right'].set_visible(False)
+        ax[0].spines['bottom'].set_visible(False)
+        ax[0].spines['left'].set_visible(False)
+        ax[1].spines['top'].set_visible(False)
+        ax[1].spines['right'].set_visible(False)
+        ax[1].spines['bottom'].set_visible(False)
+        ax[1].spines['left'].set_visible(False)
+        ax[2].spines['top'].set_visible(False)
+        ax[2].spines['right'].set_visible(False)
+        ax[2].spines['bottom'].set_visible(False)
+        ax[2].spines['left'].set_visible(False)
+        ax[3].spines['top'].set_visible(False)
+        ax[3].spines['right'].set_visible(False)
+        ax[3].spines['bottom'].set_visible(False)
+        ax[3].spines['left'].set_visible(False)
+        ax[4].spines['top'].set_visible(False)
+        ax[4].spines['right'].set_visible(False)
+        ax[4].spines['bottom'].set_visible(False)
+        ax[4].spines['left'].set_visible(False)
+        plt.rcParams.update({'font.size': 20})
+        plt.rcParams["font.weight"] = "bold"
+
+
+        #Legend
+        custom_lines = [Line2D([0], [0], color = 'black', lw = 6),
+                        Line2D([0], [0], color = 'teal', lw = 6)]
+        labels = ['WT', 'GRIN2B']
+        ax[4].legend(custom_lines, labels, frameon = False)
+
+        os.chdir(save_directory)
+        plt.savefig(str(sleepstage) + '_channel_2_bar_point_plot.jpg')
+        plt.savefig(str(sleepstage) + '_channel_2_bar_point_plot.svg')
+        plt.show()
