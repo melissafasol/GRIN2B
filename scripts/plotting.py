@@ -81,7 +81,7 @@ class PlottingGRIN2B():
             plt.clf()
         
 
-    def plot_genotype_average_by_channel(self, data_to_plot, channel, sleepstage, save_directory):
+    def plot_genotype_average_by_channel(self, data_to_plot, channel, sleepstage, save_directory, seizure):
     
             sns.set_style("white") 
             fig, axs = plt.subplots(1,1, figsize=(20,15), sharex = True, sharey=True)
@@ -99,8 +99,11 @@ class PlottingGRIN2B():
             plt.suptitle('Channel ' + str(channel) + ' ' + str(sleepstage), y = 0.92, fontsize = 30) 
             sns.despine()
             sns.despine()
-            axs.set_xlim(1, 49)
-            axs.set_ylim(10**-1, 10**3)
+            axs.set_xlim(1, 48)
+            if seizure == True:
+                axs.set_ylim(10**-1, 10**4)
+            else:
+                axs.set_ylim(10**-1, 10**3)
             axs.set_xlabel("Frequency (Hz)", fontsize = 20)
             axs.set_ylabel("Power [V**2/Hz]", fontsize = 20)
 
