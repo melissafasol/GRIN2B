@@ -130,7 +130,7 @@ class PlottingGRIN2B():
 
 
 
-    def genotype_sex_subplots(self, female_data, male_data, sleepstage, save_path) :
+    def genotype_sex_subplots(self, female_data, male_data, sleepstage, save_path, seizure):
         sns.set_style("white") 
         fig, axs = plt.subplots(1,2, figsize=(20,10), sharex = True, sharey=True)
         genotype_palette = ['teal', 'black']
@@ -173,9 +173,13 @@ class PlottingGRIN2B():
         axs[0].set_yscale('log')
         axs[1].set_yscale('log')
         axs[0].set_xlim(1, 48)
-        axs[0].set_ylim(10**-1, 10**3)
+        if seizure == True:
+            axs[0].set_ylim(10**-1, 10**4)
+            axs[1].set_ylim(10**-1, 10**4)
+        else:
+            axs[0].set_ylim(10**-1, 10**3)
+            axs[1].set_ylim(10**-1, 10**3)
         axs[1].set_xlim(1, 48)
-        axs[1].set_ylim(10**-1, 10**3)
         axs[0].set_xlabel("Frequency (Hz)", fontsize = 20)
         axs[1].set_xlabel("Frequency (Hz)", fontsize = 20)
         axs[0].set_ylabel("Power [V**2/Hz]", fontsize = 20)
