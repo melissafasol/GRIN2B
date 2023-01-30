@@ -19,7 +19,7 @@ from preproc2_extractbrainstate import ExtractBrainStateIndices
 directory_path = '/home/melissa/PREPROCESSING/GRIN2B/GRIN2B_numpy'
 seizure_br_path = '/home/melissa/PREPROCESSING/GRIN2B/seizures'
 brain_state_number = 0
-channel_number_list =  [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15]
+channel_number_list =  [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15] 
 
 mean_psd_df_list = []
 noisy_epochs_list_1 = []
