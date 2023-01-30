@@ -29,7 +29,7 @@ os.chdir(save_path)
 save_file_as = '_harmonics_algo.csv'
 
 
-for animal in br_animal_IDs:
+for animal in testing_animals:
     prepare_GRIN2B = PrepareGRIN2B(directory_path, animal)
     recording, brain_state_1, brain_state_2 = prepare_GRIN2B.load_two_analysis_files(seizure = 'False')
     start_time_1, start_time_2 = prepare_GRIN2B.get_two_start_times(start_time_GRIN2B_baseline)
@@ -94,6 +94,6 @@ for animal in br_animal_IDs:
             else:
                 pass 
                 
-                
+              
 noisy_df = pd.concat(noisy_indices_list, axis = 0).drop_duplicates().reset_index(drop = True) 
-os.chdir(save_path)
+#os.chdir(save_path)
