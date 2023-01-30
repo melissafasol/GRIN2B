@@ -37,8 +37,8 @@ class LoadGRIN2B(LoadFromStart):
         self.start_time_1 = start_time_1
         self.start_time_2 = start_time_2
         self.channelnumber = channelnumber
-        self.end_time_1 = end_time_1
-        self.end_time_2 = end_time_2
+        self.end_time_1 = end_time_1 + 1
+        self.end_time_2 = end_time_2 + 1
         
     def load_GRIN2B_from_start(self):
         data_1 = self.recording[self.channelnumber, self.start_time_1: self.end_time_1]
