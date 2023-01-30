@@ -41,7 +41,6 @@ class Filter:
         for timevalue in self.timevalues_array:
             start_time_bin = timevalue
             end_time_bin = timevalue + epoch_bins
-            
             self.extracted_datavalues.append(filtered_data[start_time_bin: end_time_bin])
 
         for i in range(len(self.extracted_datavalues)):
