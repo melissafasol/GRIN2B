@@ -202,7 +202,7 @@ class PlottingGRIN2B():
         plt.savefig('overall_average_' + str(sleepstage) + '_sex_subplots.svg')
 
     
-    def bar_and_strip_plots(self, delta, theta, sigma, beta, gamma, sleepstage, save_directory):
+    def bar_and_strip_plots(self, delta, theta, sigma, beta, gamma, sleepstage, save_directory, seizure):
         f, ax = plt.subplots(1,5, figsize=(10,10), sharey = True)
         sns.set_style("white")
         hue_order_palette = ['WT', 'GRIN2B']
@@ -257,7 +257,10 @@ class PlottingGRIN2B():
 
         #sns.despine()
         plt.yscale('log')
-        plt.ylim(10**-1, 10**3)
+        if seizure == True:
+            plt.ylim(10**-1, 10**4)
+        else:
+            plt.ylim(10**-1, 10**3)
         plt.suptitle('Channel 2 ' + str(sleepstage), fontsize = 30, fontweight = 'bold')
 
         ax[0].spines['top'].set_visible(False)
