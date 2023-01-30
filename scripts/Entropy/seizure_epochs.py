@@ -40,3 +40,41 @@ class SeizurePreparation():
         return multiple*round(number/multiple)
     
     
+    def checking_overlapping_seizures(self, seiz_start, seiz_end):
+        independent_seizure = []
+        
+        if len(seiz_start) > 0:
+            independent_seizure.append(seiz_start[0])
+            for time_start, time_end in zip(range(len(seiz_start)-1), range(len(seiz_end)-1)):
+                if seiz_start[time_start + 1] < (seiz_end[time_end] + 30):
+                    pass
+                else:
+                    independent_seizure.append(seiz_start[time_start + 1])
+            
+            else:
+                pass
+            return independent_seizure
+        
+
+    def immediate_prior_epoch(self, seizure_time, norm_br, seiz_br):
+        df_list = []
+        if seizure_time == None:
+            pass
+        else:
+            for count, value in enumerate(seizure_time):
+                if value - 5 > 0:
+                    prior_epoch = value - 30
+                    before_seizure_index = norm_br[norm_br['start_epoch'] == prior_epoch].index.values[0]
+                    seizure_index = norm_br[norm_br['start_epoch'] == value ].index.values[0]
+                    bf_ict_df = norm_br[before_seizure_index:seizure_index + 1]
+                    pre_ict = norm_br['brainstate'].values
+                    data_dict = {'Animal_ID' : [str(self.animal_id)], 'Prior_Br': [pre_ict]}
+                    ict_df = pd.DataFrame(data_dict)
+                    df_list.append(ict_df)
+        
+        if len(df_list > 0):
+            concat_df = pd.concat(df_list, axis = 0)
+        else:
+            pass
+        
+        return concat_df
