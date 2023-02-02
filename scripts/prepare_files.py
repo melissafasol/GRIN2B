@@ -100,6 +100,7 @@ class GRIN2B_Seizures():
 
     
     def removing_seizure_epochs(self, wake_indices):
+        '''function removes 5 epoch bins preceding seizure and 5 epoch bins post seizure activity'''
     
         def round_to_multiple(number, multiple):
             return multiple*round(number/multiple)
@@ -119,6 +120,13 @@ class GRIN2B_Seizures():
                 following_epochs = [seizure_epoch + epoch_bins, seizure_epoch + epoch_bins*2, seizure_epoch + epoch_bins*3, seizure_epoch + epoch_bins*4, seizure_epoch + epoch_bins*5 ]
                 all_ictal_epochs.extend(preceding_epochs + [seizure_epoch] + following_epochs)
             
+        if sample_rate_indices[-1] in wake_indices:
+            seizure_epoch = sample_rate_indices[-1]
+            epoch_bins = 1252    
+            preceding_epochs = [seizure_epoch - epoch_bins*5, seizure_epoch - epoch_bins*4, seizure_epoch - epoch_bins*3, seizure_epoch - epoch_bins*2, seizure_epoch - epoch_bins]
+            following_epochs = [seizure_epoch + epoch_bins, seizure_epoch + epoch_bins*2, seizure_epoch + epoch_bins*3, seizure_epoch + epoch_bins*4, seizure_epoch + epoch_bins*5 ]
+            all_ictal_epochs.extend(preceding_epochs + [seizure_epoch] + following_epochs)
+        
         return all_ictal_epochs
     
     
@@ -127,11 +135,15 @@ class GRIN2B_Seizures():
         for epoch in timevalues_array:
             if epoch not in all_ictal_epochs:
                 new_indices.append(epoch)
+        
+        if timevalues_array[-1] not in all_ictal_epochs:
+            new_indices.append(timevalues_array[-1])
 
         return new_indices
 
 
     def harmonics_algo(self, filtered_data, save_directory, animal, channel):
+        #function applies z-score algorithm to check that seizure activity is not bleeding through to wake epochs
         def thresholding_algo( y, lag, threshold, influence):
             signals = np.zeros(len(y))
             filteredY = np.array(y)
@@ -161,7 +173,7 @@ class GRIN2B_Seizures():
         noisy_epochs_df = []
         noisy_epochs = []
         clean_epochs_power = []
-        for epoch_idx, epoch in enumerate(filtered_data):
+        for epoch_idx, epoch in enumerate(range(len(filtered_data))):
             power_calculations = signal.welch(epoch, window = 'hann', fs = 250.4, nperseg = 1252)
             frequency = power_calculations[0]
             slope, intercept = np.polyfit(frequency[0:626], power_calculations[1][0:626], 1)
@@ -177,24 +189,10 @@ class GRIN2B_Seizures():
                 noisy_df = pd.DataFrame({'epoch_idx': [epoch_idx], 'Animal_ID': [animal], 'channel': [channel], 'artifact': ['seizure']})
                 noisy_epochs_df.append(noisy_df)
                 noisy_epochs.append(epoch_idx)
-                #print('seizure artifacts') 
-                #plt.semilogy(frequency[0:626], power_calculations[1][0:626])
-                #plt.yscale('log')
-                #plt.xlim(0, 100)
-                #plt.ylim(10**-5, 10**5)
-                #os.chdir(save_directory)
-                #plt.savefig('epoch_number' + str(epoch_idx) + '_' + str(animal) + '_' + str(channel) + 'discarded_epoch.jpg')
-                #plt.clf()
+                
             else:            
                 clean_epochs_power.append(power_calculations[1])
-                #print('clean plot') 
-                #plt.semilogy(frequency[0:626], power_calculations[1][0:626])
-                #plt.yscale('log')
-                #plt.xlim(0, 100)
-                #plt.ylim(10**-5, 10**5)
-                #os.chdir(save_directory)
-                #plt.savefig('epoch_number' + str(epoch_idx) + '_' + str(animal) + '_' + str(channel) + 'included_epoch.jpg')
-                #plt.clf()
+                
                 
         noisy_indices = [*set(noisy_epochs)]
     
