@@ -39,15 +39,11 @@ class Filter:
         filtered_data = signal.filtfilt(butter_b, butter_a, self.unfiltered_data)
 
 
-        for timevalue in self.timevalues_array:
+        for timevalue in range(len(self.timevalues_array)):
             start_time_bin = timevalue
             end_time_bin = timevalue + epoch_bins
             self.extracted_datavalues.append(filtered_data[start_time_bin: end_time_bin])
             
-        #add last time epoch 
-        start_time_lst_epoch = self.timevalues_array[-1]
-        end_time_lst_epoch = start_time_lst_epoch + 1252
-        self.extracted_datavalues.append(filtered_data[start_time_lst_epoch: end_time_lst_epoch])
 
         for epoch in range(len(self.extracted_datavalues)):
             for data_point in range(len(self.extracted_datavalues[epoch])):
@@ -56,10 +52,6 @@ class Filter:
                 else:
                     pass
         
-        #check whether last epoch is over noise limit        
-        for data_point in self.extracted_datavalues[-1]:
-            if data_point >= self.noise_limit:
-                self.channel_threshold.append(self.extracted_datavalues[-1])
 
         remove_duplicates = sorted(list(set(self.channel_threshold)))
         channels_without_noise = [i for j, i in enumerate(self.extracted_datavalues) if j not in remove_duplicates]
@@ -73,7 +65,7 @@ class Filter:
         
         filtered_data = signal.filtfilt(butter_b, butter_a, self.unfiltered_data)
 
-        for timevalue in self.timevalues_array:
+        for timevalue in range(len(self.timevalues_array)):
             start_time_bin = timevalue
             if seizure == 'True':
                 end_time_bin = timevalue + self.seizure_epoch_bins
@@ -82,22 +74,12 @@ class Filter:
             
             self.extracted_datavalues.append(filtered_data[0:14, start_time_bin: end_time_bin])    
 
-        #add last time epoch 
-        start_time_lst_epoch = self.timevalues_array[-1]
-        end_time_lst_epoch = start_time_lst_epoch + 1252
-        self.extracted_datavalues.append(filtered_data[0:14, start_time_lst_epoch: end_time_lst_epoch])
-
         for i in range(len(self.extracted_datavalues)):
             for j in range(len(self.extracted_datavalues[i])):
                 if self.extracted_datavalues[i][j] >= self.noise_limit:
                     self.channel_threshold.append(i)
                 else:
                     pass
-    
-        #check whether last epoch is over noise limit        
-        for data_point in self.extracted_datavalues[-1]:
-            if data_point >= self.noise_limit:
-                self.channel_threshold.append(self.extracted_datavalues[-1])
         
         
     def butter_bandpass_entropy_time(self, seizure):
@@ -111,15 +93,10 @@ class Filter:
         
         filtered_data = signal.filtfilt(butter_b, butter_a, self.unfiltered_data)
 
-        for timevalue in self.timevalues_array:
+        for timevalue in range(len(self.timevalues_array)):
             start_time_bin = timevalue
             end_time_bin = timevalue + epoch_bins
             
             self.extracted_datavalues.append(filtered_data[start_time_bin: end_time_bin])
-
-        #add last time epoch 
-        start_time_lst_epoch = self.timevalues_array[-1]
-        end_time_lst_epoch = start_time_lst_epoch + epoch_bins
-        self.extracted_datavalues.append(filtered_data[start_time_lst_epoch: end_time_lst_epoch])
         
         return self.extracted_datavalues
