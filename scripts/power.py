@@ -34,15 +34,6 @@ class PowerSpectrum:
                     noisy_epochs.append(power_calculations[1])
                 else:
                     threshold_power.append(power_calculations[1])
-                    plot_per_epoch = power_calculations[1]
-                    #print('test plot') 
-                    #plt.semilogy(frequency[0:626], plot_per_epoch[0:626])
-                    #plt.yscale('log')
-                    #plt.xlim(0, 100)
-                    #plt.ylim(10**-5, 10**5)
-                    #os.chdir(save_directory)
-                    #plt.savefig('epoch_number' + str(data_array[0]) + '_' + str(animal) + '_' + str(channel) + 'wake_testing_thresholds.jpg')
-                    #plt.clf()
                         
        
             df_psd = pd.DataFrame(threshold_power)
