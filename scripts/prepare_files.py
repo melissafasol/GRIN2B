@@ -1,3 +1,6 @@
+#script written to prepare all GRIN2B recording and brainstate files, class for removing seizure epochs from wake data
+
+
 import os
 import sys 
 from scipy import stats
