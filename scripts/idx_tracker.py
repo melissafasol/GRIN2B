@@ -1,3 +1,5 @@
+#script written in December 2022 to 
+
 import os 
 import numpy as np 
 import pandas as pd
@@ -35,7 +37,7 @@ class IDX_tracker(Filter):
         
         filtered_data = signal.filtfilt(butter_b, butter_a, self.unfiltered_data)
 
-        for idx_value, timevalue in zip(self.df_index['Time_Idx'], self.df_index['Time_Value']):
+        for idx_value, timevalue in zip(range(len(self.df_index['Time_Idx'])), range(len(self.df_index['Time_Value']))):
             start_time_bin = timevalue
             end_time_bin = timevalue + epoch_bins
             eeg_values = filtered_data[start_time_bin: end_time_bin]
@@ -44,7 +46,7 @@ class IDX_tracker(Filter):
                     noisy_epochs.append(idx_value)
                     break
 
-        for idx_value, timevalue in zip(self.df_index['Time_Idx'], self.df_index['Time_Value']):
+        for idx_value, timevalue in zip(range(len(self.df_index['Time_Idx'])),range(len(self.df_index['Time_Value']))):
             if idx_value not in noisy_epochs:
                 start_time_bin = timevalue 
                 end_time_bin = timevalue + epoch_bins
@@ -86,7 +88,7 @@ class IDX_tracker(Filter):
         noisy_epochs_df = []
         noisy_epochs = []
         clean_epochs_power = []
-        for key, epoch in filtered_data.items():
+        for key, epoch in range(len(filtered_data.items())):
             power_calculations = signal.welch(epoch, window = 'hann', fs = 250.4, nperseg = 1252)
             frequency = power_calculations[0]
             slope, intercept = np.polyfit(frequency[0:626], power_calculations[1][0:626], 1)
@@ -123,7 +125,7 @@ class IDX_tracker(Filter):
         noisy_epochs_df = []
         noisy_epochs = []
         clean_epochs_power = []
-        for key, epoch in filtered_data.items():
+        for key, epoch in range(len(filtered_data.items())):
             power_calculations = signal.welch(epoch, window = 'hann', fs = 250.4, nperseg = 1252)
             frequency = power_calculations[0]
             slope, intercept = np.polyfit(frequency[0:626], power_calculations[1][0:626], 1)
@@ -186,7 +188,7 @@ class HarmonicsPreFiltered():
         noisy_epochs = []
         clean_epochs_power = []
         if self.brainstate == 0:
-            for key, epoch in self.filtered_data.items():
+            for key, epoch in range(len(self.filtered_data.items())):
                 power_calculations = signal.welch(epoch, window = 'hann', fs = 250.4, nperseg = 1252)
                 frequency = power_calculations[0]
                 slope, intercept = np.polyfit(frequency[0:626], power_calculations[1][0:626], 1)
@@ -207,7 +209,7 @@ class HarmonicsPreFiltered():
                     clean_epochs_power.append(power_calculations[1])
                 
         else:
-            for key, epoch in self.filtered_data.items():
+            for key, epoch in range(len(self.filtered_data.items())):
                 power_calculations = signal.welch(epoch, window = 'hann', fs = 250.4, nperseg = 1252)
                 frequency = power_calculations[0]
                 slope, intercept = np.polyfit(frequency[0:626], power_calculations[1][0:626], 1)
