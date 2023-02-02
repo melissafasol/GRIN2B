@@ -87,20 +87,13 @@ class RemoveNoisyEpochs:
             self.slope_list.append(slope)
             self.intercept_list.append(intercept)
 
-            for i, item in enumerate(self.intercept_list):
+            for i, item in enumerate(range(len(self.intercept_list))):
                 if self.intercept_list[i] > 500:
                     self.intercept_remove.append(i)
-            
-            #last index 
-            if self.intercept_list[-1] > 500:
-                self.intercept_remove.append(self.intercept_list[-1])
                 
-            for i, item in enumerate(self.slope_list):
+            for i, item in enumerate(range(len(self.slope_list))):
                 if self.slope_list[i] < -5:
                     self.slope_remove.append(i)
-
-            if self.slope_list[-1] < -5:
-                self.slope_remove.append(i)
 
             return (slope, intercept,self.slope_remove, self.intercept_remove)
     
