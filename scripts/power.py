@@ -34,8 +34,13 @@ class PowerSpectrum:
                     noisy_epochs.append(power_calculations[1])
                 else:
                     threshold_power.append(power_calculations[1])
-                        
-       
+            
+            power_lst_epoch = scipy.signal.welch(self.data_without_noise[-1], window = 'hann', fs = 250.4, nperseg = self.nperseg)
+            if mean(power_lst_epoch[1][30:40]) > 1000 or mean(power_lst_epoch[1]) < 0.00001:
+                noisy_epochs.append(power_lst_epoch[1])
+            else:
+                threshold_power.append(power_lst_epoch[1])
+                
             df_psd = pd.DataFrame(threshold_power)
             mean_values = df_psd.mean(axis = 0)
             mean_psd = mean_values.to_numpy()
@@ -85,11 +90,18 @@ class RemoveNoisyEpochs:
             for i, item in enumerate(self.intercept_list):
                 if self.intercept_list[i] > 500:
                     self.intercept_remove.append(i)
+            
+            #last index 
+            if self.intercept_list[-1] > 500:
+                self.intercept_remove.append(self.intercept_list[-1])
                 
             for i, item in enumerate(self.slope_list):
                 if self.slope_list[i] < -5:
                     self.slope_remove.append(i)
-        
+
+            if self.slope_list[-1] < -5:
+                self.slope_remove.append(i)
+
             return (slope, intercept,self.slope_remove, self.intercept_remove)
     
     
@@ -98,9 +110,9 @@ class RemoveNoisyEpochs:
             if len(self.intercept_remove) > len(self.slope_remove):
                 for i in sorted(self.intercept_remove, reverse = True):
                         del self.psd[i]
-                else:
-                    for i in sorted(self.slope_remove, reverse = True):
-                        del self.psd[i]       
+            else:
+                for i in sorted(self.slope_remove, reverse = True):
+                    del self.psd[i]       
         else:
             pass
         return self.psd
