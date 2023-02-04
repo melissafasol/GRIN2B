@@ -39,15 +39,15 @@ class Filter:
         filtered_data = signal.filtfilt(butter_b, butter_a, self.unfiltered_data)
 
 
-        for timevalue in range(len(self.timevalues_array)):
+        for timevalue in self.timevalues_array:
             start_time_bin = timevalue
             end_time_bin = timevalue + epoch_bins
             self.extracted_datavalues.append(filtered_data[start_time_bin: end_time_bin])
             
 
-        for epoch in range(len(self.extracted_datavalues)):
-            for data_point in range(len(self.extracted_datavalues[epoch])):
-                if self.extracted_datavalues[epoch][data_point] >= self.noise_limit:
+        for epoch in self.extracted_datavalues:
+            for data_point in epoch:
+                if data_point >= self.noise_limit:
                     self.channel_threshold.append(epoch)
                 else:
                     pass
@@ -65,7 +65,7 @@ class Filter:
         
         filtered_data = signal.filtfilt(butter_b, butter_a, self.unfiltered_data)
 
-        for timevalue in range(len(self.timevalues_array)):
+        for timevalue in self.timevalues_array:
             start_time_bin = timevalue
             if seizure == 'True':
                 end_time_bin = timevalue + self.seizure_epoch_bins
@@ -74,9 +74,9 @@ class Filter:
             
             self.extracted_datavalues.append(filtered_data[0:14, start_time_bin: end_time_bin])    
 
-        for i in range(len(self.extracted_datavalues)):
-            for j in range(len(self.extracted_datavalues[i])):
-                if self.extracted_datavalues[i][j] >= self.noise_limit:
+        for i in self.extracted_datavalues:
+            for j in self.extracted_datavalues[i]:
+                if j >= self.noise_limit:
                     self.channel_threshold.append(i)
                 else:
                     pass
@@ -93,7 +93,7 @@ class Filter:
         
         filtered_data = signal.filtfilt(butter_b, butter_a, self.unfiltered_data)
 
-        for timevalue in range(len(self.timevalues_array)):
+        for timevalue in self.timevalues_array:
             start_time_bin = timevalue
             end_time_bin = timevalue + epoch_bins
             

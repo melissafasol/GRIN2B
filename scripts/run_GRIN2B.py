@@ -17,6 +17,7 @@ brain_state_number = 2
 channel_number_list =  [0,2,3,4,5,6,7,8,9,10,11,12,13,15]
 seizure_epochs = []
 average_df = []
+noisy_indices_list = []
 animals_exclude_seizures = ['140', '238', '362', '365', '375', '378', '401', '402', '404']
 noisy_animal_test = ['364']
 
@@ -26,12 +27,13 @@ save_file_as = '_test_slicing_jan_23.csv'
 
 for animal in br_animal_IDs:
     if animal in animals_exclude_seizures:
+        animal = str(animal)
         print(str(animal) + ' in seizure free id')
         prepare_GRIN2B = PrepareGRIN2B(directory_path, animal)
         recording, brain_state_1, brain_state_2 = prepare_GRIN2B.load_two_analysis_files(seizure = 'False')
         start_time_1, start_time_2 = prepare_GRIN2B.get_two_start_times(start_time_GRIN2B_baseline)
         end_time_1, end_time_2 = prepare_GRIN2B.get_end_times(end_time_GRIN2B_baseline)
-        for channelnumber in channel_number_list:
+        for channelnumber in range(len(channel_number_list)):
             load_GRIN2B = LoadGRIN2B(recording, start_time_1, start_time_2, end_time_1, end_time_2, channelnumber)
             data_1, data_2 = load_GRIN2B.load_GRIN2B_from_start()
             extract_brain_state_1 = ExtractBrainStateIndices(brainstate_file = brain_state_1, brainstate_number = brain_state_number)
@@ -46,8 +48,12 @@ for animal in br_animal_IDs:
             filtered_data_1 = filter_1.butter_bandpass(seizure = 'False')
             filtered_data_2 = filter_2.butter_bandpass(seizure = 'False')
             if brain_state_number == 0:
-                noisy_indices_1, mean_psd_1, frequency_1 = harmonics_algo(filtered_data_1)
-                noisy_indices_2, mean_psd_2, frequency_2 = harmonics_algo(filtered_data_2)
+                seizure_class_1 = GRIN2B_Seizures(br_file = [], epoch_length = 1252)
+                seizure_class_2 = GRIN2B_Seizures(br_file = [], epoch_length = 1252)
+                noisy_indices_1, mean_psd_1, frequency_1 = seizure_class_1.harmonics_algo(filtered_data_1, save_path, animal, channelnumber)
+                noisy_indices_2, mean_psd_2, frequency_2 = seizure_class_2.harmonics_algo(filtered_data_2, save_path, animal, channelnumber)
+                noisy_indices_list.extend(noisy_indices_1 + noisy_indices_2)
+                break
                 print('filtering complete')
             else: 
                 power_1 = PowerSpectrum(filtered_data_1, nperseg=1252)
@@ -94,6 +100,7 @@ for animal in br_animal_IDs:
                 pass   
     else:
         print(str(animal) + ' seizure pipeline beginning')
+        animal = str(animal)
         prepare_GRIN2B = PrepareGRIN2B(directory_path, animal)
         recording, brain_state_1, brain_state_2 = prepare_GRIN2B.load_two_analysis_files(seizure = 'False')
         start_time_1, start_time_2 = prepare_GRIN2B.get_two_start_times(start_time_GRIN2B_baseline)
