@@ -19,13 +19,14 @@ from preproc2_extractbrainstate import ExtractBrainStateIndices
 directory_path = '/home/melissa/PREPROCESSING/GRIN2B/GRIN2B_numpy'
 seizure_br_path = '/home/melissa/PREPROCESSING/GRIN2B/seizures'
 brain_state_number = 0
-channel_number_list =  [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15] 
+channel_number_list =  [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15] 
 
 mean_psd_df_list = []
 noisy_epochs_list_1 = []
 noisy_epochs_list_2 = []
 #adapt for channel 0 :
 for animal in br_animal_IDs:
+    print(animal)
     prepare_GRIN2B = PrepareGRIN2B(directory_path, animal)
     recording, brain_state_1, brain_state_2 = prepare_GRIN2B.load_two_analysis_files(seizure = 'False')
     start_time_1, start_time_2 = prepare_GRIN2B.get_two_start_times(start_time_GRIN2B_baseline)
@@ -45,8 +46,8 @@ for animal in br_animal_IDs:
             idx_2 = IDX_tracker(data_2, brain_state_2, timevalues_array_2)
             clean_concat_1 = idx_1.butter_bandpass_index_tracker(seizure = 'False')
             print('file_1')
-            print(clean_concat_1)
             clean_concat_2 = idx_2.butter_bandpass_index_tracker(seizure = 'False')
+            print('file_2')
             idx_1 = HarmonicsPreFiltered(clean_concat_1, brainstate = brain_state_number)
             idx_2 = HarmonicsPreFiltered(clean_concat_2, brainstate = brain_state_number)
             noisy_epoch_1, mean_psd_1, frequency_1 = idx_1.harmonics_algo_idx(animal, channelnumber)
@@ -74,5 +75,5 @@ psd_concat = pd.concat(mean_psd_df_list)
 noisy_epochs_1 = pd.concat(noisy_epochs_list_1)
 noisy_epochs_2 = pd.concat(noisy_epochs_list_2)
 psd_concat.to_csv('wake_power_old_algo.csv')
-noisy_epochs_1.to_csv('wake_noisy_indices_br_1_old_algo.csv')
-noisy_epochs_2.to_csv('wake_noisy_indices_br_2_old_algo.csv')
+noisy_epochs_1.to_csv('wake_noisy_indices_br_1_feb_23.csv')
+noisy_epochs_2.to_csv('wake_noisy_indices_br_2_feb_23.csv')
