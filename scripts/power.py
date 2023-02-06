@@ -16,8 +16,8 @@ class PowerSpectrum:
         
     def average_psd(self, average): 
         if average == 'True':
-            for data_array in range(len(self.data_without_noise)):
-                power_calculations = scipy.signal.welch(self.data_without_noise[data_array], window = 'hann', fs = 250.4, nperseg = self.nperseg)
+            for data_array in self.data_without_noise:
+                power_calculations = scipy.signal.welch(data_array, window = 'hann', fs = 250.4, nperseg = self.nperseg)
                 power_spectrum_list = [power_array[1] for power_array in power_calculations]
                 frequency = power_calculations[0]
                 df_psd = pd.DataFrame(power_spectrum_list)
@@ -27,8 +27,8 @@ class PowerSpectrum:
         else:
             threshold_power = []
             noisy_epochs = []
-            for data_array in (range(len(self.data_without_noise))):
-                power_calculations = scipy.signal.welch(self.data_without_noise[data_array], window = 'hann', fs = 250.4, nperseg = self.nperseg)
+            for data_array in self.data_without_noise:
+                power_calculations = scipy.signal.welch(data_array, window = 'hann', fs = 250.4, nperseg = self.nperseg)
                 frequency = power_calculations[0]
                 if mean(power_calculations[1][30:40]) > 1000 or mean(power_calculations[1]) < 0.00001:
                     noisy_epochs.append(power_calculations[1])
