@@ -26,7 +26,22 @@ class PacketLoss():
         new_br_state_file = br_state_file.loc[br_state_file['brainstate'] == br_state_number].reset_index()
         for time_idx in missing_nums:
             noise_index_1 = int(time_values[time_idx]/250.4)
-            idx_to_change = new_br_state_file.loc[new_br_state_file['start_epoch'] == noise_index_1]
+            if len(new_br_state_file.loc[new_br_state_file['start_epoch'] == noise_index_1]) > 0:
+                idx_to_change = new_br_state_file.loc[new_br_state_file['start_epoch'] == noise_index_1]
+            elif len(new_br_state_file.loc[new_br_state_file['end_epoch'] == noise_index_1]) > 0:
+                idx_to_change = new_br_state_file.loc[new_br_state_file['end_epoch'] == noise_index_1]
             og_br_change = idx_to_change['index']
+            #change corresponding index of brainstate column to 6
             br_state_file.loc[og_br_change, 'brainstate'] = 6
-            
+        
+        return br_state_file
+
+#function to run steps of class
+def packet_loss_run(clean_concat_file, br_state_file, br_state_number, time_values):
+    packet_loss_func = PacketLoss(clean_concat_file)
+    sorted_keys = packet_loss_func.sort_filt_dict_keys()
+    missing_nums = packet_loss_func.findMissingNums(sorted_keys)
+    br_state_file = packet_loss_func.extract_packet_loss(br_state_file, br_state_number, missing_nums, time_values)
+    return br_state_file
+    
+    
