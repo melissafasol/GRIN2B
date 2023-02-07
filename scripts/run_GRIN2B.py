@@ -33,7 +33,7 @@ for animal in br_animal_IDs:
         recording, brain_state_1, brain_state_2 = prepare_GRIN2B.load_two_analysis_files(seizure = 'False')
         start_time_1, start_time_2 = prepare_GRIN2B.get_two_start_times(start_time_GRIN2B_baseline)
         end_time_1, end_time_2 = prepare_GRIN2B.get_end_times(end_time_GRIN2B_baseline)
-        for channelnumber in range(len(channel_number_list)):
+        for channelnumber in channel_number_list:
             load_GRIN2B = LoadGRIN2B(recording, start_time_1, start_time_2, end_time_1, end_time_2, channelnumber)
             data_1, data_2 = load_GRIN2B.load_GRIN2B_from_start()
             extract_brain_state_1 = ExtractBrainStateIndices(brainstate_file = brain_state_1, brainstate_number = brain_state_number)
