@@ -5,6 +5,11 @@ import sys
 import numpy as np 
 import pandas as pd 
 
+import scipy
+from scipy.fft import fft, fftfreq
+from scipy import signal
+import pandas as pd
+
 sys.path.insert(0, '/home/melissa/PROJECT_DIRECTORIES/GRIN2B/scripts')
 from GRIN2B_constants import start_time_GRIN2B_baseline, end_time_GRIN2B_baseline, br_animal_IDs, seizure_free_IDs
 from prepare_files import PrepareGRIN2B
@@ -12,7 +17,7 @@ from prepare_files import PrepareGRIN2B
 directory_normal_path = '/home/melissa/PREPROCESSING/GRIN2B/GRIN2B_numpy/'
 directory_seizure_path = '/home/melissa/PREPROCESSING/GRIN2B/seizures/'
 
-class SeizurePreparation():
+class SeizurePrep_DispEn():
     '''prepares brain states and recordings to analyse seizure epochs for entropy calculations in independent seizures to track
     brain dynamics prior to a seizure beginning'''
     def __init__(self, animal_id, seizure_directory, normal_directory):
@@ -69,16 +74,17 @@ class SeizurePreparation():
                     
             else:
                 pass
+                
             return independent_seizure_start_times, independent_seizure_duration
     
-    def only_wake_prior_epochs(self, indep_seizure_values, independent_seizure_duration, norm_br_state):
+    def only_wake_prior_epochs(self, indep_seizure_values, concat_seiz_duration, norm_br_state):
         #checks prior seizure epochs to see 
         prior_epochs_seizure_wake = []
         if indep_seizure_values == None:
             pass
         else:
-            seizure_start_values = independent_seizure_duration['seizure_start'].to_numpy()
-            seizure_end_values = independent_seizure_duration['seizure_end'].to_numpy()
+            seizure_start_values = concat_seiz_duration['seizure_start'].to_numpy()
+            seizure_end_values = concat_seiz_duration['seizure_end'].to_numpy()
             for value, seiz_start, seiz_end in zip(indep_seizure_values, seizure_start_values, seizure_end_values):
                 if value - 30 > 0:
                     prior_epochs = value - 30
@@ -90,35 +96,31 @@ class SeizurePreparation():
                         pass
                     else:
                         #dataframe with details to extract time values from recording for entropy calculations
-                       data_dict = {'animal_id': [self.animal_id],'pr_seiz_time': [prior_epochs], 'seiz_time_start': [value], 
-                                    'seiz_time_end':[seiz_end]}
+                       data_dict = {'animal_id': [self.animal_id],'pr_seiz_time': [int(prior_epochs*250.4)], 'seiz_time_start': [int(value*250.4)], 
+                                    'seiz_time_end':[int(seiz_end*250.4)]}
                        prior_epochs_seizure_wake.append(pd.DataFrame(data = data_dict))
                        
         return prior_epochs_seizure_wake
-
-    def immediate_prior_epoch(self, seizure_time, norm_br, seiz_br):
-        df_list = []
-        if seizure_time == None:
-            pass
-        else:
-            for count, value in enumerate(seizure_time):
-                if value - 5 > 0:
-                    prior_epoch = value - 30
-                    before_seizure_index = norm_br[norm_br['start_epoch'] == prior_epoch].index.values[0]
-                    seizure_index = norm_br[norm_br['start_epoch'] == value ].index.values[0]
-                    bf_ict_df = norm_br[before_seizure_index:seizure_index + 1]
-                    pre_ict = norm_br['brainstate'].values
-                    data_dict = {'Animal_ID' : [str(self.animal_id)], 'Prior_Br': [pre_ict]}
-                    ict_df = pd.DataFrame(data_dict)
-                    df_list.append(ict_df)
-        
-        if len(df_list > 0):
-            concat_df = pd.concat(df_list, axis = 0)
-        else:
-            pass
-        
-        return concat_df
     
+
+class Filter_Seizure():
+    
+    order = 3
+    sampling_rate = 250.4
+    nyquist = 125.2
+    low = 0.2/nyquist
+    high = 100/nyquist
+    noise_limit = 3000
+    
+    def __init__(self, unfiltered_data):
+        self.unfiltered_data = unfiltered_data
+    
+    def butter_bandpass(self):
+        butter_b, butter_a = signal.butter(self.order, [self.low, self.high], btype='band', analog = False)
+        
+        filtered_data = signal.filtfilt(butter_b, butter_a, self.unfiltered_data)
+        
+        return filtered_data
     
 #code to extract only wake prior seizure epochs
 for animal in br_animal_IDs:
@@ -127,7 +129,7 @@ for animal in br_animal_IDs:
     else:
         prepare_GRIN2B = PrepareGRIN2B(directory_path = directory_normal_path, animal_id = animal)
         recording, brain_state_1, brain_state_2 = prepare_GRIN2B.load_two_analysis_files(seizure = 'False')
-        seizure_prep_br = SeizurePreparation(animal_id = animal, seizure_directory = directory_seizure_path, 
+        seizure_prep_br = SeizurePrep_DispEn(animal_id = animal, seizure_directory = directory_seizure_path, 
                                             normal_directory = directory_normal_path)
         seiz_start_1, seiz_start_2, seiz_end_1, seiz_end_2 = seizure_prep_br.time_values() #returns the seizure start times rounded to nearest multiple of five and the seizure end times rounded to nearest integer
         indep_seizure_start_1, indep_seizure_dur_1 = seizure_prep_br.checking_overlapping_seizures(seiz_start_1, seiz_end_1) #checks for non-overlapping seizures and returns start times 
