@@ -6,7 +6,11 @@ import numpy as np
 import pandas as pd 
 
 sys.path.insert(0, '/home/melissa/PROJECT_DIRECTORIES/GRIN2B/scripts')
-from GRIN2B_constants import start_time_GRIN2B_baseline, end_time_GRIN2B_baseline, br_animal_IDs, GRIN_het_IDs
+from GRIN2B_constants import start_time_GRIN2B_baseline, end_time_GRIN2B_baseline, br_animal_IDs, seizure_free_IDs
+from prepare_files import PrepareGRIN2B
+
+directory_normal_path = '/home/melissa/PREPROCESSING/GRIN2B/GRIN2B_numpy/'
+directory_seizure_path = '/home/melissa/PREPROCESSING/GRIN2B/seizures/'
 
 class SeizurePreparation():
     '''prepares brain states and recordings to analyse seizure epochs for entropy calculations in independent seizures to track
@@ -75,21 +79,18 @@ class SeizurePreparation():
         else:
             seizure_start_values = independent_seizure_duration['seizure_start'].to_numpy()
             seizure_end_values = independent_seizure_duration['seizure_end'].to_numpy()
-            for idx, value, seiz_start, seiz_end in enumerate(zip(indep_seizure_values, seizure_start_values, seizure_end_values)):
+            for value, seiz_start, seiz_end in zip(indep_seizure_values, seizure_start_values, seizure_end_values):
                 if value - 30 > 0:
                     prior_epochs = value - 30
                     before_seizure_index = norm_br_state[norm_br_state['start_epoch'] == prior_epochs].index.values[0]
                     seizure_index = norm_br_state[norm_br_state['start_epoch'] == value].index.values[0]
                     bf_ict_df = norm_br_state[before_seizure_index:seizure_index]
                     pre_ict = bf_ict_df['brainstate'].values
-                    print(len(pre_ict))
-                    print(np.mean(pre_ict))
                     if np.mean(pre_ict) > 0:
                         pass
                     else:
                         #dataframe with details to extract time values from recording for entropy calculations
-                       data_dict = {'animal_id': [self.animal_id], 'timevalue_idx' : [idx],
-                                    'pr_seiz_time': [prior_epochs], 'seiz_time_start': [value], 
+                       data_dict = {'animal_id': [self.animal_id],'pr_seiz_time': [prior_epochs], 'seiz_time_start': [value], 
                                     'seiz_time_end':[seiz_end]}
                        prior_epochs_seizure_wake.append(pd.DataFrame(data = data_dict))
                        
@@ -117,3 +118,18 @@ class SeizurePreparation():
             pass
         
         return concat_df
+    
+    
+#code to extract only wake prior seizure epochs
+for animal in br_animal_IDs:
+    if animal in seizure_free_IDs:
+        pass
+    else:
+        prepare_GRIN2B = PrepareGRIN2B(directory_path = directory_normal_path, animal_id = animal)
+        recording, brain_state_1, brain_state_2 = prepare_GRIN2B.load_two_analysis_files(seizure = 'False')
+        seizure_prep_br = SeizurePreparation(animal_id = animal, seizure_directory = directory_seizure_path, 
+                                            normal_directory = directory_normal_path)
+        seiz_start_1, seiz_start_2, seiz_end_1, seiz_end_2 = seizure_prep_br.time_values() #returns the seizure start times rounded to nearest multiple of five and the seizure end times rounded to nearest integer
+        indep_seizure_start_1, indep_seizure_dur_1 = seizure_prep_br.checking_overlapping_seizures(seiz_start_1, seiz_end_1) #checks for non-overlapping seizures and returns start times 
+        concat_seizure_df = pd.concat(indep_seizure_dur_1, axis = 0)
+        only_wake_epochs = seizure_prep_br.only_wake_prior_epochs(indep_seizure_start_1, concat_seizure_df, brain_state_1)
