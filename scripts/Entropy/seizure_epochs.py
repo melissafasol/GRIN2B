@@ -109,7 +109,7 @@ class Filter_Seizure():
     sampling_rate = 250.4
     nyquist = 125.2
     low = 0.2/nyquist
-    high = 100/nyquist
+    high = 48/nyquist
     noise_limit = 3000
     
     def __init__(self, unfiltered_data):
