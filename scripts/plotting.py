@@ -185,7 +185,7 @@ class PlottingGRIN2B():
         axs[0].set_ylabel("Power [V**2/Hz]", fontsize = 20)
 
         #include an overall plot title 
-        fig.suptitle('Overall Average ' + str(sleepstage), y = 0.96, fontsize = 30) 
+        fig.suptitle('Channel 2 Average ' + str(sleepstage), y = 0.96, fontsize = 30) 
 
 
         #increase width of the x and y axis 
