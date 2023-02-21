@@ -4,6 +4,7 @@ import numpy as np
 import scipy 
 from scipy import average, gradient, signal
 import sys
+import matplotlib.pyplot as plt
 
 from prepare_files import PrepareGRIN2B
 from GRIN2B_constants import start_time_GRIN2B_baseline, end_time_GRIN2B_baseline
@@ -14,14 +15,14 @@ from Filter import Filter
 channel_number_list =  [0,2,3,4,5,6,7,8,9,10,11,12,13,15]
 sampling_rate = 250.4
 epoch_length = 1252
-brain_state_number = 4
+brain_state_number = 3
 
 br_animal_seiz = ['130', '129', '131', '132', '137', '138', '139', '227', '229', '236', '237',
                   '239', '240', '241', '363', '364', '366', '367', '368', '369', '371', '373', '382', 
                   '383', '424', '430', '433']
 
 directory_path = '/home/melissa/PREPROCESSING/GRIN2B/GRIN2B_numpy'
-seizure_br_path = '/home/melissa/RESULTS/GRIN2B/PAPER/DATASETS/brainstate_quantification/Integrated_Seiz_Brainstates/'
+seizure_br_path = '/home/melissa/RESULTS/GRIN2B/PAPER/DATASETS/brainstate_quantification/wake_seizures'
 save_path = '/home/melissa/RESULTS/GRIN2B/PAPER/SEIZURE_POWER_DF'
 
 def time_values(br_1):
@@ -32,7 +33,7 @@ def time_values(br_1):
     else:
         pass 
     
-    seiz_time_values = br_1.loc[br_1['brainstate'] == 4]
+    seiz_time_values = br_1.loc[br_1['brainstate'] == 3]
     start = seiz_time_values['start_epoch'].to_numpy()
     end = seiz_time_values['end_epoch'].to_numpy()
     time_values = []
@@ -50,7 +51,7 @@ def time_values(br_1):
 
 def power_function(array_1d):
     power_calc = scipy.signal.welch(array_1d, window = 'hann', fs = 250.4, nperseg = 1252)
-    return power_calc[1]
+    return power_calc[0], power_calc[1]
 
 for animal in br_animal_seiz:
     animal = str(animal)
@@ -59,6 +60,7 @@ for animal in br_animal_seiz:
     recording, brain_state_1, brain_state_2 = prepare_GRIN2B.load_two_analysis_files(seizure = 'False')
     start_time_1, start_time_2 = prepare_GRIN2B.get_two_start_times(start_time_GRIN2B_baseline)
     end_time_1, end_time_2 = prepare_GRIN2B.get_end_times(end_time_GRIN2B_baseline)
+
     #load recording from start in all channels
     data_1 = recording[:, start_time_1: end_time_1 + 1]
     data_2 = recording[:, start_time_2: end_time_2 + 1]
@@ -74,30 +76,51 @@ for animal in br_animal_seiz:
     filtered_data_1 = filter_data_array_1.butter_bandpass()
     filtered_data_2 = filter_data_array_1.butter_bandpass()
     
+    print('filtered data')
+    
     time_1 = time_values(br_1)
     time_2 = time_values(br_2)
     
-    #calculating power for each bin 
-    power_values_1 = []
-    power_values_2 = []
+
     
-    for time in time_1:
-        time_end = time + 1253
-        data_bin = filtered_data_1[:, time:time_end]
-        power_calculations = np.apply_along_axis(power_function, 1, data_bin)
-        power_values_1.append(power_calculations)
+    print('starting power calculations')
+    channel_list = []
+    df_list = []
+    for idx, arr in enumerate(filtered_data_1):
+        for time in time_1:
+            time_end = time + 1253
+            binned = arr[time:time_end]
+            freq, power_value = power_function(binned)
+            channel_list.append(power_value)
+        concat_channel_test = np.vstack(channel_list)
+        freq = freq.flatten()
+        concat_channel = np.mean(concat_channel_test, axis = 0).flatten()
+        df_dict = {'Animal_ID': [animal]*627, 'Channel': [idx]*627, 'Power': concat_channel,
+                   'Frequency': freq}
+        df_list.append(pd.DataFrame(data = df_dict))
+
+    overall_df_1 = pd.concat(df_list)
     
-    for time in time_2:
-        time_end = time + 1253
-        data_bin = filtered_data_2[:, time: time_end]
-        power_calculations = np.apply_along_axis(power_function, 1, data_bin)
-        power_values_2.append(power_calculations)
-     
-    #averaging across channels in br_1 and br_2
-    test_avg_1 = np.mean(power_values_1, axis=0)
-    test_avg_2 = np.mean(power_values_2, axis=0)
-    #averaging br_1 and br_2 into one array
-    total_avg = (test_avg_1 + test_avg_2)/2
+        
+        
+    channel_list_2 = []
+    df_list_2 = []
+    for idx, arr in enumerate(filtered_data_2):
+        for time in time_1:
+            time_end = time + 1253
+            binned = arr[time:time_end]
+            freq, power_value = power_function(binned)
+            channel_list_2.append(power_value)
+        concat_channel_test = np.vstack(channel_list_2)
+        freq = freq.flatten()
+        concat_channel = np.mean(concat_channel_test, axis = 0).flatten()
+        df_dict = {'Animal_ID': [animal]*627, 'Channel': [idx]*627, 'Power': concat_channel,
+                   'Frequency': freq}
+        df_list_2.append(pd.DataFrame(data = df_dict))
+
+    overall_df_2 = pd.concat(df_list_2)
+    
     os.chdir(save_path)
-    np.save(animal + '_harmonics_seizure_avg_power.npy', total_avg)
-    print('total average calculated and saved for ' + animal)
+    concat_df = pd.concat([overall_df_1, overall_df_2], axis = 0)
+    concat_df.to_csv(str(animal) + '_harmonics_df.csv')
+    
