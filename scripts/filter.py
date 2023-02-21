@@ -25,7 +25,13 @@ class Filter:
         
         
     '''filter out low-frequency drifts and frequencies above 50Hz'''
-     
+    def simple_butter_bandpass(self):
+            
+        butter_b, butter_a = signal.butter(self.order, [self.low, self.high], btype='band', analog = False)
+        
+        filtered_data = signal.filtfilt(butter_b, butter_a, self.unfiltered_data)
+        return filtered_data
+
 
     def butter_bandpass(self, seizure):
         '''function to filter data per channel and remove epochs above a certain mV threshold'''
