@@ -23,6 +23,29 @@ brain_state_number = 2
 save_directory = '/home/melissa/PREPROCESSING/GRIN2B/'
 channel_number_list =  [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15]
 
+
+def select_channels(filtered_data):
+    
+    chan_0 = filtered_data[0]
+    chan_2 = filtered_data[2]
+    chan_3 = filtered_data[3]
+    chan_4 = filtered_data[4]
+    chan_5 = filtered_data[5]
+    chan_6 = filtered_data[6]
+    chan_7 = filtered_data[7]
+    chan_8 = filtered_data[8]
+    chan_9 = filtered_data[9]
+    chan_10 = filtered_data[10]
+    chan_11 = filtered_data[11]
+    chan_12 = filtered_data[12]
+    chan_13 = filtered_data[13]
+    chan_15 = filtered_data[15]
+    
+    chan_arr = np.vstack((chan_0, chan_2, chan_3, chan_4, chan_5, chan_6, chan_7, chan_8,
+                          chan_9, chan_10, chan_11, chan_12, chan_13, chan_15))
+    
+    return chan_arr
+
 for animal in GRIN_wt_IDs:
     print('loading ' + animal)
     prepare_GRIN2B = PrepareGRIN2B(directory_path, animal)
