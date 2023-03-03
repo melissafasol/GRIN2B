@@ -51,18 +51,15 @@ for animal in br_animal_IDs:
         filtered_data_1 = filter_1.butter_bandpass_entropy_time(seizure = 'False')
         filtered_data_2 = filter_2.butter_bandpass_entropy_time(seizure = 'False')
         one_epoch_multi_samp_1 = []
-        one_epoch_ci_1 = []
         one_epoch_multi_samp_2 = []
-        one_epoch_ci_2 = []
         for epoch in filtered_data_1:
             Mobj = EH.MSobject('SampEn', m = 1, r = 0.2)
             Mobj.Func
-            MSx, Ci = EH.cMSEn(epoch, Mobj, Scales = 5, RadNew = 0) 
+            MSx, Ci = EH.cMSEn(epoch, Mobj, Scales = 5, RadNew = 0)
             one_epoch_multi_samp_1.append(MSx)
-            one_epoch_ci_1.append(Ci)
         one_chan_multi_samp_1 = np.concatenate(one_epoch_multi_samp_1)
         channel_dict_1 = {'Animal_ID': [animal]*len(one_chan_multi_samp_1), 'Multi_Samp_En': one_chan_multi_samp_1,
-                'Ci_En': [one_epoch_ci_1]*len(one_chan_multi_samp_1), 'Channel': [channelnumber]*len(one_chan_multi_samp_1)}
+                 'Channel': [channelnumber]*len(one_chan_multi_samp_1)}
         channel_data_1 = pd.DataFrame(data = channel_dict_1)
         channel_df.append(channel_data_1)    
         for epoch in filtered_data_2:
@@ -70,10 +67,9 @@ for animal in br_animal_IDs:
             Mobj.Func
             MSx, Ci = EH.cMSEn(epoch, Mobj, Scales = 5, RadNew = 0) 
             one_epoch_multi_samp_2.append(MSx)
-            one_epoch_ci_2.append(Ci)
         one_chan_multi_samp_2 = np.concatenate(one_epoch_multi_samp_2)
         channel_dict_2 = {'Animal_ID': [animal]*len(one_chan_multi_samp_2), 'Multi_Samp_En': one_chan_multi_samp_2,
-                'Ci_En': [one_epoch_ci_2]*len(one_chan_multi_samp_2), 'Channel': [channelnumber]*len(one_chan_multi_samp_2)}
+                'Channel': [channelnumber]*len(one_chan_multi_samp_2)}
         channel_data_2 = pd.DataFrame(data = channel_dict_2)
         channel_df.append(channel_data_2)
     animal_df = pd.concat(channel_df)
