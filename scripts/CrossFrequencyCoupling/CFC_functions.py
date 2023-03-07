@@ -14,7 +14,7 @@ sys.path.insert(0,'/home/melissa/PROJECT_DIRECTORIES/GRIN2B/scripts')
 from prepare_files import PrepareFiles, PrepareGRIN2B
 
 
-class Filter():
+class FilterCFC():
     
     order = 3
     sampling_rate = 250.4
@@ -38,7 +38,7 @@ class Filter():
         return filtered_data
     
     
-class ExtractThetaTroughPreSeizure():
+class ExtractThetaTroughIndices():
     
     sampling_rate = 250.4
 
@@ -54,7 +54,7 @@ class ExtractThetaTroughPreSeizure():
         self.length = (self.end_time - self.start_time)/self.sampling_rate #length of seizure array
         self.times = create_times(self.length, self.sampling_rate) #creates time array
         self.length_theta_trough = (20, 30)
-        self.tidx = np.logical_and(self.times >= self.length_theta_trough[0], self.times < length_theta_trough.xlim[1])
+        self.tidx = np.logical_and(self.times >= self.length_theta_trough[0], self.times < length_theta_trough[1])
     
     def apply_moving_mean(self, channel):
         #channel to calculate peaks and troughs 
@@ -104,10 +104,12 @@ class ExtractThetaTroughPreSeizure():
                 trough_indices.append(idx)
             else:
                 pass
-            
         
         for i in trough_indices:
             pre_trough_indices.append([i - 26, i-1])
             post_trough_indices.append([i + 1, i + 26])
         
         return trough_indices, pre_trough_indices, post_trough_indices
+    
+    
+
