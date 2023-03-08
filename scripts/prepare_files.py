@@ -27,11 +27,12 @@ class PrepareGRIN2B(PrepareFiles):
         self.end_dict_1 = animal_id + '_1A'
         self.end_dict_2 = animal_id + '_2A'
 
-    
-    def get_end_times(self, end_times_GRIN2B_dict):
+    def get_start_end_times(self, start_times_GRIN2B_dict, end_times_GRIN2B_dict):
+        start_time_1 = start_times_GRIN2B_dict[self.start_dict_1]
+        start_time_2 = start_times_GRIN2B_dict[self.start_dict_2]
         end_time_1 = end_times_GRIN2B_dict[self.end_dict_1]
         end_time_2 = end_times_GRIN2B_dict[self.end_dict_2]
-        return (end_time_1, end_time_2)
+        return start_time_1, start_time_2, end_time_1, end_time_2
 
 class LoadGRIN2B(LoadFromStart):
 
@@ -44,8 +45,8 @@ class LoadGRIN2B(LoadFromStart):
         self.end_time_2 = end_time_2 + 1
         
     def load_GRIN2B_from_start(self):
-        data_1 = self.recording[self.channelnumber, self.start_time_1: self.end_time_1]
-        data_2 = self.recording[self.channelnumber, self.start_time_2: self.end_time_2]
+        data_1 = self.recording[self.channelnumber, self.start_time_1: self.end_time_1 + 1]
+        data_2 = self.recording[self.channelnumber, self.start_time_2: self.end_time_2 + 1]
         return (data_1, data_2)
     
 
